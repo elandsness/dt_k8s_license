@@ -1,0 +1,17 @@
+{
+  "name": "dt_k8s_license_report",
+  "version": "1.0.0",
+  "description": "Pulls metrics on host utilization and container memory consumption to facilitate ramped Dynatrace pricing and also internal chargeback reporting.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Erik Landsness",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^8.2.0",
+    "percentile": "^1.3.0",
+    "yargs": "^15.3.1"
+  }
+}
