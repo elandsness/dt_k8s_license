@@ -1,7 +1,6 @@
 const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCutoff, detailedReport) => {
     // Load required packages
-    const axios = require('axios'); // for making http calls
-    const fetch = require('node-fetch');
+    const fetch = require('node-fetch'); // for making http calls
     const percentile = require("percentile"); // calculates percentiles
     const createCsvWriter = require('csv-writer').createObjectCsvWriter; // for building csv from objects
     const createArrayCsvWriter = require('csv-writer').createArrayCsvWriter; // for building csv from arrays
