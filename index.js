@@ -6,7 +6,7 @@ const fs = require('fs'); // access filesystem to check and create dir if requir
 // load config
 const tenantURL = process.env.TENANT_URL.slice(-1) === '/' ? process.env.TENANT_URL.slice(0, -1) : process.env.TENANT_URL; // tenant url
 const apiKey = process.env.DYNATRACE_API_KEY; // dynatrace api key
-const tags = process.env.HOST_TAGS == null ? '' : `&tag=${process.env.HOST_TAGS.join('&tag=')}`; // if tags are set, store as query string
+const tags = process.env.HOST_TAGS == null ? '' : `&tag=${process.env.HOST_TAGS.split(',').join('&tag=')}`; // if tags are set, store as query string
 const huFactor = 12; // number of GB per HU
 const percentileCutoff = 99; // percentile to calculate HU
 
