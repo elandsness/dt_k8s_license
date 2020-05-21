@@ -24,35 +24,47 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
     const from = (new Date(y, m, 1)).getTime();
     const to = (new Date(y, m + 1, 0)).getTime();
 
-    // Fetch hosts running k8s
-    apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${tags}`;
-    (async () => {
-        try {
-            let r = await fetch(`${tenantURL}${apiURI}`, {'headers': headers})
-            let rj = await r.json()
-            k8shosts = await Promise.all(
-                rj.map(async h => {
-                    if (h.hasOwnProperty('softwareTechnologies')){
-                        for (let i of h.softwareTechnologies){
-                            if (i.type.toUpperCase() == 'KUBERNETES' && h.monitoringMode.toUpperCase() === 'FULL_STACK'){
-                                return {
-                                    'entityId': h.entityId,
-                                    'displayName': h.displayName,
-                                    'consumedHostUnits': h.consumedHostUnits
-                                }
+    const threeDays = 3*24*60*60*1000;
+
+    const fetchHost = async (timeframe) => {
+        apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${tags}`;
+        let r = await fetch(`${tenantURL}${apiURI}${timeframe}`, {'headers': headers})
+        let rj = await r.json()
+        let tmp_hosts = await Promise.all(
+            rj.map(async h => {
+                if (h.hasOwnProperty('softwareTechnologies')){
+                    for (let i of h.softwareTechnologies){
+                        if (i.type.toUpperCase() == 'KUBERNETES' && h.monitoringMode.toUpperCase() === 'FULL_STACK'){
+                            return {
+                                'entityId': h.entityId,
+                                'displayName': h.displayName,
+                                'consumedHostUnits': h.consumedHostUnits
                             }
                         }
                     }
-                })
-            )
-            k8shosts = await k8shosts.filter(function (el) {
-                return el != null;
-            });
-        } catch (err) {
-            console.log(err)
-        }
-      }
-    )().then(async () => {
+                }
+            })
+        )
+        return await tmp_hosts.filter(function (el) {
+            return el != null;
+        });
+    }
+    // loop function wrapped in promise, so we can wait to continue until we've run all the needed api calls
+    const loopHosts = async () => {
+        let start = from, end = start + threeDays;
+        return new Promise(async (resolve) => {
+            while(start < to){
+                k8shosts = k8shosts.concat(await fetchHost(`&startTimestamp=${start}&endTimestamp=${end}`));
+                start += threeDays;
+                end = (end + threeDays) > to ? to : end + threeDays;
+            }
+            resolve();
+        })
+    }
+    // run the loop then continue
+    loopHosts().then(async () => {
+        // get rid of duplicates in the host list
+        k8shosts = k8shosts.filter((v,i,a)=>a.findIndex(t=>(t.entityId === v.entityId))===i)
         // Fetch metrics for memory utilization
         apiURI = '/api/v2/metrics/query'
         let queryString = `?metricSelector=builtin:host.mem.used:max&resolution=1h&from=${from}&to=${to}`;
