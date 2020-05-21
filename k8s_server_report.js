@@ -26,7 +26,8 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
     const threeDays = 3*24*60*60*1000;
 
     const fetchHost = async (timeframe) => {
-        apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${tags}`;
+        formatTags = Array.isArray(tags) ? `&tag=${tags.join('$tag=')}` : '';
+        apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatTags}`;
         let r = await fetch(`${tenantURL}${apiURI}${timeframe}`, {'headers': headers})
         let rj = await r.json()
         let tmp_hosts = await Promise.all(
@@ -67,8 +68,8 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
         // Fetch metrics for memory utilization
         apiURI = '/api/v2/metrics/query'
         let queryString = `?metricSelector=builtin:host.mem.used:max&resolution=1h&from=${from}&to=${to}`;
-        let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000`, {'headers': headers})
-        console.log(`${tenantURL}${apiURI}${queryString}&pageSize=1000`);
+        let formatTags = Array.isArray(tags) ? `&entitySelector=type(HOST),tag(${tags.join('),tag(')})` : '';
+        let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=100${formatTags}`, {'headers': headers});
         let rj = await r.json();
         nextKey = rj.nextPageKey;
         if (detailedReport) {
