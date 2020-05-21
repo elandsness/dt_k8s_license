@@ -129,7 +129,7 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
                     totalOldHU += host.consumedHostUnits;
                 }
             })
-        }).catch((error) => {console.log(error.message)}).finally(async () => {
+        }).catch((error) => {console.log(error)}).finally(async () => {
             // stage csv, add totals and dump everything to a file
             const totals = [{
                 'entityId': 'TOTALS',
@@ -153,8 +153,8 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
                 csvWriter.writeRecords(totals)
                 .then(() => {
                     console.log('Host unit report complete.');
-                }).catch((e) => { console.log(e.message); });
-            }).catch((e) => { console.log(e.message); });
+                }).catch((e) => { console.log(e); });
+            }).catch((e) => { console.log(e); });
             
             // if detailedReport, then write out the raw metrics
             if (detailedReport){
@@ -164,12 +164,12 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
                 writeDetails.writeRecords(detailData)
                 .then(() => {
                     console.log('Detail report complete.');
-                }).catch((e) => { console.log(e.message); });
+                }).catch((e) => { console.log(e); });
             }
-        }).catch((error) => {console.log(error.message)});
+        }).catch((error) => {console.log(error)});
     }).catch(function (error) {
         // handle error
-        console.log(error.message);
+        console.log(error);
     });
 }
 module.exports = {
