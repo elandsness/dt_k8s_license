@@ -68,6 +68,7 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
         apiURI = '/api/v2/metrics/query'
         let queryString = `?metricSelector=builtin:host.mem.used:max&resolution=1h&from=${from}&to=${to}`;
         let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000`, {'headers': headers})
+        console.log(`${tenantURL}${apiURI}${queryString}&pageSize=1000`);
         let rj = await r.json();
         nextKey = rj.nextPageKey;
         if (detailedReport) {
