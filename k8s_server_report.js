@@ -13,7 +13,6 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
     let k8shosts = []; // array to store list of k8s hosts
     let apiURI = ''; // used to stage api endpoints before querying
     let totalMem = 0, totalHU = 0; totalOldHU = 0; // to calculate total memory and HUs
-    let removeHosts = []; // list of k8s hosts with no memory metrics for the period
     let detailData = []; // fow raw data report when detailedReport is enabled
     let nextKey = null; // to track next page key so we can handle pagination
 
@@ -128,13 +127,10 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
                     host.hostUnits = hu;
                     totalHU += hu;
                     totalOldHU += host.consumedHostUnits;
-                } else { /*removeHosts.push(host)*/ }
+                }
             })
         }).catch((error) => {console.log(error.message)}).finally(async () => {
             // stage csv, add totals and dump everything to a file
-            for (let x = removeHosts.length -1; x > -1; x--){
-                k8shosts.splice(removeHosts[x],1);
-            }
             const totals = [{
                 'entityId': 'TOTALS',
                 'displayName': '',
