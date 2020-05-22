@@ -1,4 +1,4 @@
-const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCutoff, detailedReport) => {
+const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFactor, percentileCutoff, detailedReport) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
     const percentile = require("percentile"); // calculates percentiles
@@ -26,7 +26,7 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
     const threeDays = 3*24*60*60*1000;
 
     const fetchHost = async (timeframe) => {
-        formatTags = Array.isArray(tags) ? `&tag=${tags.join('$tag=')}` : '';
+        formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
         apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatTags}`;
         let r = await fetch(`${tenantURL}${apiURI}${timeframe}`, {'headers': headers})
         let rj = await r.json()
@@ -67,8 +67,8 @@ const server_report = (tenantURL, apiKey, tags, filePath, huFactor, percentileCu
         k8shosts = k8shosts.filter((v,i,a)=>a.findIndex(t=>(t.entityId === v.entityId))===i)
         // Fetch metrics for memory utilization
         apiURI = '/api/v2/metrics/query'
-        let queryString = `?metricSelector=builtin:host.mem.used:max&resolution=1h&from=${from}&to=${to}`;
-        let formatTags = Array.isArray(tags) ? `&entitySelector=type(HOST),tag(${tags.join('),tag(')})` : '';
+        let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h&from=${from}&to=${to}`;
+        let formatTags = Array.isArray(processTags) ? `&entitySelector=type(HOST),tag(${processTags.join('),tag(')})` : '';
         let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=100${formatTags}`, {'headers': headers});
         let rj = await r.json();
         nextKey = rj.nextPageKey;

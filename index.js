@@ -6,7 +6,8 @@ const fs = require('fs'); // access filesystem to check and create dir if requir
 // load config
 const tenantURL = process.env.TENANT_URL.slice(-1) === '/' ? process.env.TENANT_URL.slice(0, -1) : process.env.TENANT_URL; // tenant url
 const apiKey = process.env.DYNATRACE_API_KEY; // dynatrace api key
-const tags = process.env.HOST_TAGS == null ? '' : process.env.HOST_TAGS.split(','); // if tags are set, store as query string
+const hostTags = process.env.HOST_TAGS == null ? '' : process.env.HOST_TAGS.split(','); // if tags are set, store as array
+const processTags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.split(','); // if tags are set, store as array
 const huFactor = 12; // number of GB per HU
 const percentileCutoff = 99; // percentile to calculate HU
 
@@ -32,8 +33,8 @@ try {
 }
 
 if (argv.u)
-    server_report(tenantURL, apiKey, tags, argv.p, huFactor, percentileCutoff, argv.details);
+    server_report(tenantURL, apiKey, hostTags, processTags, argv.p, huFactor, percentileCutoff, argv.details);
 if (argv.c)
-    chargeback_report(tenantURL, apiKey, tags, argv.p);
+    chargeback_report(tenantURL, apiKey, processTags, argv.p);
 if (!argv.u & !argv.c)
     console.log(`You've opted to run no reports... Try passing -u, -c or both.`)
