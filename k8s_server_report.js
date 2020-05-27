@@ -1,4 +1,4 @@
-const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFactor, percentileCutoff, detailedReport) => {
+const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFactor, percentileCutoff, detailedReport, s_date, e_date) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
     const percentile = require("percentile"); // calculates percentiles
@@ -16,12 +16,22 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
     let detailData = []; // fow raw data report when detailedReport is enabled
     let nextKey = null; // to track next page key so we can handle pagination
 
-    // get start and end timestamps based on last month
-    const d = new Date();
-    d.setMonth(d.getMonth() - 1)
-    const y = d.getFullYear(), m = d.getMonth();
-    const from = (new Date(y, m, 1)).getTime();
-    const to = (new Date(y, m + 1, 0)).getTime();
+    // get start and end timestamps based on passed values or last month if none passed
+    let d = new Date(), from, to;
+    if (s_date && e_date){
+        try {
+            from = (new Date(s_date)).getTime();
+            to = (new Date(e_date)).getTime();
+        } catch(e) {
+            console.log('Please supply start and end datetimes in this format: mm/dd/yyyy hh:mm [am,pm]');
+            return;
+        }
+    } else {
+        d.setMonth(d.getMonth() - 1)
+        const y = d.getFullYear(), m = d.getMonth();
+        from = (new Date(y, m, 1)).getTime();
+        to = (new Date(y, m + 1, 0)).getTime();
+    }
 
     const threeDays = 3*24*60*60*1000;
 
@@ -182,12 +192,13 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
                 const writeDetails = createArrayCsvWriter({
                     path: `${filePath}/k8s_host_detail_${d.getTime()}.csv`
                 });
-                k8shosts.map(async v => {
-                    detailData.push([v.entityId, ...v.rawMem]);
-                })
-                .then(() => { writeDetails.writeRecords(detailData) })
-                .then(() => {
-                    console.log('Detail report complete.');
+                const processDetailData = async () => {
+                    return Promise.all(k8shosts.map(async v => {
+                        detailData.push([v.entityId, ...v.rawMem]);
+                    }))
+                }
+                processDetailData().then(() => { writeDetails.writeRecords(detailData)
+                    .then(() => { console.log('Detail report complete.'); }).catch((e) => { console.log(e); });
                 }).catch((e) => { console.log(e); });
             }
         }).catch((error) => {console.log(error)});
