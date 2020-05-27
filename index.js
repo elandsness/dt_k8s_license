@@ -33,7 +33,7 @@ try {
 }
 
 if (argv.u)
-    server_report(tenantURL, apiKey, hostTags, processTags, argv.p, huFactor, percentileCutoff, argv.details);
+    server_report(tenantURL, apiKey, hostTags, processTags, argv.p, huFactor, percentileCutoff, argv.details, argv.s, argv.e);
 if (argv.c)
     chargeback_report(tenantURL, apiKey, processTags, argv.p);
 if (!argv.u & !argv.c)
