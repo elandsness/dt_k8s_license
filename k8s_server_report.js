@@ -33,12 +33,15 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
         to = (new Date(y, m + 1, 0)).getTime();
     }
 
+    console.log(`Running report from ${from} to ${to}`);
+
     const threeDays = 3*24*60*60*1000;
 
     const fetchHost = async (timeframe) => {
         formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
         apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatTags}`;
         let r = await fetch(`${tenantURL}${apiURI}${timeframe}`, {'headers': headers})
+        console.log(`${tenantURL}${apiURI}${timeframe}`);
         let rj = await r.json()
         let tmp_hosts = await Promise.all(
             rj.map(async h => {
@@ -95,6 +98,7 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
         let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h&from=${from}&to=${to}`;
         let formatTags = Array.isArray(processTags) ? `&entitySelector=type(PROCESS_GROUP_INSTANCE),tag(${processTags.join('),tag(')})` : '';
         let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=100${formatTags}`, {'headers': headers});
+        console.log(`${tenantURL}${apiURI}${queryString}&pageSize=100${formatTags}`);
         let rj = await r.json();
         nextKey = rj.nextPageKey;
         if (detailedReport) {
@@ -118,6 +122,7 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
     }).then(async () => {
         const fetchNext = async (k) => {
             let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers})
+            console.log(`${tenantURL}${apiURI}?nextPageKey=${k}`);
             let rj = await r.json();
             nextKey = rj.nextPageKey;
             await Promise.all(
@@ -159,6 +164,7 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
                 host.hostUnits = hu;
                 totalHU += hu;
                 totalOldHU += host.consumedHostUnits;
+                console.log(host.entityId);
             })
         }).catch((error) => {console.log(error)}).finally(async () => {
             // stage csv, add totals and dump everything to a file
