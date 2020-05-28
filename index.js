@@ -20,6 +20,8 @@ var argv = require('yargs')
     .describe('p','Directory path to store reports ("./some/path")')
     .describe('u', 'Run host unit report')
     .describe('c','Run container memory and namespace report')
+    .describe('s', 'Start date and time for report(s) in mm/dd/yyyy hh:mm [am,pm] format')
+    .describe('e', 'End date and time for report(s) in mm/dd/yyyy hh:mm [am,pm] format')
     .argv;
 
 // see if the dir already exists. if not, create it or fall back to ./ if not able to
