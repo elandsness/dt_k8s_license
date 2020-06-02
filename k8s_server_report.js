@@ -10,11 +10,12 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
         'Authorization': `Api-Token ${apiKey}`,
         'Accept': 'application/json'
     }; // headers used during api calls
-    let k8shosts = []; // array to store list of k8s hosts
+    let k8shosts = {}; // array to store list of k8s hosts
     let apiURI = ''; // used to stage api endpoints before querying
     let totalMem = 0, totalHU = 0; totalOldHU = 0; // to calculate total memory and HUs
     let detailData = []; // fow raw data report when detailedReport is enabled
     let nextKey = null; // to track next page key so we can handle pagination
+    let pgiHostRelationship = {}; // stores relationships of PGI to Host by ID
 
     // get start and end timestamps based on passed values or last month if none passed
     let d = new Date(), from, to;
@@ -43,46 +44,34 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
         let r = await fetch(`${tenantURL}${apiURI}${timeframe}`, {'headers': headers})
         console.log(`${tenantURL}${apiURI}${timeframe}`);
         let rj = await r.json()
-        let tmp_hosts = await Promise.all(
+        await Promise.all(
             rj.map(async h => {
                 if (h.hasOwnProperty('softwareTechnologies')){
                     for (let i of h.softwareTechnologies){
                         if (i.type.toUpperCase() == 'KUBERNETES' && h.monitoringMode.toUpperCase() === 'FULL_STACK'){
-                            let exists = false;
-                            for (let z in k8shosts){
-                                if(k8shosts[z].entityId == h.entityId){
-                                    exists = z;
-                                    break;
-                                }
-                            }
-                            if (exists){
-                                k8shosts[exists].consumedHostUnits = Math.max(h.consumedHostUnits, k8shosts[exists].consumedHostUnits);
-                                k8shosts[exists].pgis = [...k8shosts[exists].pgis, ...h.toRelationships.isProcessOf]
+                            h.toRelationships.isProcessOf.map(v => {pgiHostRelationship[v] = h.entityId});
+                            if (k8shosts.hasOwnProperty(h.entityId)){
+                                k8shosts[h.entityId].consumedHostUnits = Math.max(h.consumedHostUnits, k8shosts[h.entityId].consumedHostUnits);
                                 return null;
                             } else {
-                                return {
+                                k8shosts[h.entityId] = {
                                     'entityId': h.entityId,
                                     'displayName': h.displayName,
-                                    'consumedHostUnits': h.consumedHostUnits,
-                                    'rawMem': [],
-                                    'pgis': h.toRelationships.isProcessOf
+                                    'consumedHostUnits': h.consumedHostUnits
                                 }
                             }
                         }
                     }
                 }
             })
-        )
-        return await tmp_hosts.filter(function (el) {
-            return el != null;
-        });
+        );
     }
     // loop function wrapped in promise, so we can wait to continue until we've run all the needed api calls
     const loopHosts = async () => {
         let start = from, end = start + threeDays;
         return new Promise(async (resolve) => {
             while(start < to){
-                k8shosts = k8shosts.concat(await fetchHost(`&startTimestamp=${start}&endTimestamp=${end}`));
+                await fetchHost(`&startTimestamp=${start}&endTimestamp=${end}`);
                 start += threeDays;
                 end = (end + threeDays) > to ? to : end + threeDays;
             }
@@ -108,12 +97,13 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
         await Promise.all(
             rj.result[0].data.map(async h => {
                 try {
-                    for (let k in k8shosts){
-                        if (k8shosts[k].pgis.includes(h.dimensions[0])){
-                            k8shosts[k].rawMem = k8shosts[k].rawMem.length > 0 ?  
-                                await k8shosts[k].rawMem.map((x,i) => x + (h.values[i]/(1024*1024*1024))) :
-                                h.values.map(x => x / (1024*1024*1024));
-                            break;
+                    if (pgiHostRelationship.hasOwnProperty(h.dimensions[0])){
+                        if (k8shosts.hasOwnProperty(pgiHostRelationship[h.dimensions[0]])){
+                            if (k8shosts[pgiHostRelationship[h.dimensions[0]]].hasOwnProperty('rawMem')){
+                                await k8shosts[pgiHostRelationship[h.dimensions[0]]].rawMem.map((x,i) => x + (h.values[i]/(1024*1024*1024)))
+                            } else {
+                                k8shosts[pgiHostRelationship[h.dimensions[0]]].rawMem = h.values.map(x => x / (1024*1024*1024));
+                            }
                         }
                     }
                 } catch (e) { console.log(e) }
@@ -128,12 +118,13 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
             await Promise.all(
                 await rj.result[0].data.map(async h => {
                     try {
-                        for (let k in k8shosts){
-                            if (k8shosts[k].pgis.includes(h.dimensions[0])){
-                                k8shosts[k].rawMem = k8shosts[k].rawMem.length > 0 ?  
-                                    await k8shosts[k].rawMem.map((x,i) => x + (h.values[i]/(1024*1024*1024))) :
-                                    h.values.map(x => x / (1024*1024*1024));
-                                break;
+                        if (pgiHostRelationship.hasOwnProperty(h.dimensions[0])){
+                            if (k8shosts.hasOwnProperty(pgiHostRelationship[h.dimensions[0]])){
+                                if (k8shosts[pgiHostRelationship[h.dimensions[0]]].hasOwnProperty('rawMem')){
+                                    await k8shosts[pgiHostRelationship[h.dimensions[0]]].rawMem.map((x,i) => x + (h.values[i]/(1024*1024*1024)))
+                                } else {
+                                    k8shosts[pgiHostRelationship[h.dimensions[0]]].rawMem = h.values.map(x => x / (1024*1024*1024));
+                                }
                             }
                         }
                     } catch (e) { console.log(e) }
@@ -154,18 +145,18 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
         loopy().then(async () => {
             // calculate HUs and drop into a CSV
             // convert bytes to gb, calc HU and calulate totals
-            k8shosts.map(async (host) => {
+            for (let host in k8shosts) {
                 // if there's no memory metrics for the host, it wasn't running during the period
-                let memInGb = percentile(percentileCutoff, host.rawMem.filter((obj) => obj ));
-                let hu = Math.ceil(memInGb / huFactor);
-                hu = hu > host.consumedHostUnits ? host.consumedHostUnits : hu; // in case host is at or near capacity
-                host.memory = memInGb.toFixed(2);
-                totalMem += memInGb;
-                host.hostUnits = hu;
-                totalHU += hu;
-                totalOldHU += host.consumedHostUnits;
-                console.log(host.entityId);
-            })
+                let memInGb = percentile(percentileCutoff, k8shosts[host].rawMem.filter((obj) => obj ));
+                let hu = parseFloat(Math.ceil(memInGb / huFactor));
+                hu = hu > k8shosts[host].consumedHostUnits ? k8shosts[host].consumedHostUnits : hu; // in case host is at or near capacity
+                k8shosts[host].memory = memInGb ? memInGb.toFixed(2) : 0;
+                totalMem += parseFloat(k8shosts[host].memory);
+                k8shosts[host].hostUnits = parseFloat(hu);
+                totalHU += parseFloat(hu) ? parseFloat(hu) : 0;
+                totalOldHU += k8shosts[host].consumedHostUnits;
+                console.log(k8shosts[host].entityId,' => ',k8shosts[host].consumedHostUnits,' + ',totalHU)
+            }
         }).catch((error) => {console.log(error)}).finally(async () => {
             // stage csv, add totals and dump everything to a file
             const totals = [{
@@ -175,6 +166,11 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
                 'consumedHostUnits': totalOldHU,
                 'hostUnits': totalHU
             }]
+            let hostList = [];
+            for (let i in k8shosts){
+                hostList.push(k8shosts[i]);
+            }
+            while (hostList.length < k8shosts.length){}
             const csvWriter = createCsvWriter({
                 path: `${filePath}/k8s_host_${d.getTime()}.csv`,
                 header: [
@@ -185,7 +181,7 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
                     {id: 'hostUnits', title: 'ADJUSTED_HU'}
                 ]
             });
-            csvWriter.writeRecords(k8shosts)
+            csvWriter.writeRecords(hostList)
             .then(() => {
                 csvWriter.writeRecords(totals)
                 .then(() => {
@@ -199,9 +195,9 @@ const server_report = (tenantURL, apiKey, hostTags, processTags, filePath, huFac
                     path: `${filePath}/k8s_host_detail_${d.getTime()}.csv`
                 });
                 const processDetailData = async () => {
-                    return Promise.all(k8shosts.map(async v => {
-                        detailData.push([v.entityId, ...v.rawMem]);
-                    }))
+                    for (let v in k8shosts) {
+                        detailData.push([k8shosts[v].entityId, ...k8shosts[v].rawMem]);
+                    }
                 }
                 processDetailData().then(() => { writeDetails.writeRecords(detailData)
                     .then(() => { console.log('Detail report complete.'); }).catch((e) => { console.log(e); });
