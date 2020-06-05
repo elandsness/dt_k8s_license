@@ -1,6 +1,7 @@
 // Load required packages
 const fetchhost = require('./fetch_host_data').fetch_host; // for fetching host data
 const fetchpgi = require('./fetch_pgi_data').fetch_pgi; // for fetching pgi data
+const fetchns = require('./fetch_namespaces').fetch_ns; // for fetching namespaces
 const schedule = require('node-schedule'); // for scheduling jobs
 require('dotenv').config(); // read in vars from .env
 // load config
@@ -13,4 +14,5 @@ const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.s
 let j = schedule.scheduleJob('1 * * * *', function(){
     fetchhost(tenantURL,apiKey,tags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
     fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+    fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
 });
