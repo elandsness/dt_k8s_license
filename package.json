@@ -9,11 +9,12 @@
   "author": "Erik Landsness",
   "bin": "index.js",
   "dependencies": {
-    "axios": "^0.19.2",
     "csv-writer": "^1.6.0",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mysql": "^2.18.1",
     "node-fetch": "^2.6.0",
-    "percentile": "^1.3.0",
-    "yargs": "^15.3.1"
+    "node-schedule": "^1.3.2",
+    "percentile": "^1.3.0"
   }
 }
