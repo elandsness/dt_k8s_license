@@ -9,6 +9,9 @@
   },
   "author": "Erik Landsness",
   "bin": "index.js",
+  "scripts": {
+    "start": "node ."
+  },
   "dependencies": {
     "csv-writer": "^1.6.0",
     "dotenv": "^8.2.0",
