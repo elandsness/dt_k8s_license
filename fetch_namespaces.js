@@ -24,7 +24,6 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     // fecth the pgi data and populate namespace in db
     let formatTags = Array.isArray(processTags) ? `&tag=${processTags.join('&tag=')}` : '';
     apiURI = `/api/v1/entity/infrastructure/processes?includeDetails=true&relativeTime=2hours${formatTags}`;
-    console.log(`${tenantURL}${apiURI}`);
     (async () => {
         let r = await fetch(`${tenantURL}${apiURI}`, {'headers': headers});
         let rj = await r.json();

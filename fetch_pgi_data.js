@@ -43,7 +43,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb)
 
             await Promise.all(
                 rj.result[0].data.map((pgi) => { storePGI(pgi) })
-            )
+            ).catch(e =>{ console.log(rj, e) });
     })().then(async () => {
         const fetchNext = async (k) => {
             let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers});
@@ -51,7 +51,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb)
             nextKey = rj.nextPageKey;
             await Promise.all(
                 rj.result[0].data.map((pgi) => { storePGI(pgi) })
-            )
+            ).catch(e =>{ console.log(rj, e) });
             return rj.nextPageKey;
         }
         // loop function wrapped in promise, so we can wait to continue until we've run all the needed api calls
