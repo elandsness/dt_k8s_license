@@ -4,7 +4,8 @@
   "description": "Pulls metrics on host utilization and container memory consumption to facilitate ramped Dynatrace pricing and also internal chargeback reporting.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
   },
   "author": "Erik Landsness",
   "bin": "index.js",
