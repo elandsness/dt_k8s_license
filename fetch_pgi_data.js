@@ -8,6 +8,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb)
         'Authorization': `Api-Token ${apiKey}`,
         'Accept': 'application/json'
     }; // headers used during api calls
+    let apiURI; // stores api endpoint
 
     // connect to the db
     const con = mysql.createConnection({

@@ -8,6 +8,7 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
         'Authorization': `Api-Token ${apiKey}`,
         'Accept': 'application/json'
     }; // headers used during api calls
+    let apiURI; // stores api endpoint
 
     // connect to the db
     const con = mysql.createConnection({
@@ -22,7 +23,7 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
     });
 
     // fecth the host data and populate in db
-    formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
+    let formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
     apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatTags}`;
     console.log(`${tenantURL}${apiURI}`);
     (async () => {

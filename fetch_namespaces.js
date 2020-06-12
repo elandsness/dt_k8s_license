@@ -8,6 +8,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         'Authorization': `Api-Token ${apiKey}`,
         'Accept': 'application/json'
     }; // headers used during api calls
+    let apiURI; // stores api endpoint
 
     // connect to the db
     const con = mysql.createConnection({
@@ -23,7 +24,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
 
     // fecth the pgi data and populate namespace in db
     let formatTags = Array.isArray(processTags) ? `&tag=${processTags.join('&tag=')}` : '';
-    let apiURI = `/api/v1/entity/infrastructure/processes`;
+    apiURI = `/api/v1/entity/infrastructure/processes`;
     let params = `?includeDetails=true&relativeTime=2hours${formatTags}`;
     console.log(`${tenantURL}${apiURI}${params}`);
     (async () => {
