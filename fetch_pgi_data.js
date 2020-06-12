@@ -23,13 +23,17 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb)
 
     // function for storing pgi data
     const storePGI = (pgi) => {
-        let q = `INSERT INTO tbl_pgidata (pgi_id, timestamp, memory)
-        VALUES ("${pgi.dimensions[0]}","${pgi.timestamps[0]}","${(pgi.values[0]/1024/1024/1024)}")
-        ON DUPLICATE KEY UPDATE pgi_id="${pgi.dimensions[0]}", timestamp="${pgi.timestamps[0]}",
-        memory="${(pgi.values[0]/1024/1024/1024)}"`;
-        con.query(q, function (err) {
-            if (err) throw err;
-        });
+        try {
+            let q = `INSERT INTO tbl_pgidata (pgi_id, timestamp, memory)
+            VALUES ("${pgi.dimensions[0]}","${pgi.timestamps[0]}","${(pgi.values[0]/1024/1024/1024)}")
+            ON DUPLICATE KEY UPDATE pgi_id="${pgi.dimensions[0]}", timestamp="${pgi.timestamps[0]}",
+            memory="${(pgi.values[0]/1024/1024/1024)}"`;
+            con.query(q, function (err) {
+                if (err) throw err;
+            });
+        } catch (e) {
+          console.log(e);
+        }
     }
 
     // Fetch metrics for memory utilization
@@ -37,18 +41,21 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb)
             apiURI = '/api/v2/metrics/query'
             let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h&from=now-1h/h&to=now-0h/h`;
             let formatTags = Array.isArray(processTags) ? `&entitySelector=type(PROCESS_GROUP_INSTANCE),tag(${processTags.join('),tag(')})` : '';
+            console.log(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`);
             let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`, {'headers': headers});
             let rj = await r.json();
             nextKey = rj.nextPageKey;
-
+            console.log(rj);
             await Promise.all(
                 rj.result[0].data.map((pgi) => { storePGI(pgi) })
             )
     })().then(async () => {
         const fetchNext = async (k) => {
+            console.log(`${tenantURL}${apiURI}?nextPageKey=${k}`);
             let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers});
             let rj = await r.json();
             nextKey = rj.nextPageKey;
+            console.log();
             await Promise.all(
                 rj.result[0].data.map((pgi) => { storePGI(pgi) })
             )
@@ -58,10 +65,10 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb)
         const loopy = async () => {
             return new Promise(async (resolve) => {
                 while(nextKey != null){
-                    nextKey = await fetchNext(nextKey);
+                    nextKey = await fetchNext(nextKey).catch(e => {console.log(e)});
                 }
                 resolve();
-            })
+            }).catch(e => { console.log(e) })
         }
         // run the loop then continue
         loopy().then(() => {
