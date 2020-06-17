@@ -8,16 +8,24 @@ const express = require('express'); // for exposing api endpoint to query data
 const app = express();
 require('dotenv').config(); // read in vars from .env
 // load config
-const tenantURL = process.env.TENANT_URL.slice(-1) === '/' ? process.env.TENANT_URL.slice(0, -1) : process.env.TENANT_URL; // tenant url
-const apiKey = process.env.DYNATRACE_API_KEY; // dynatrace api key
+const tenantURLs = process.env.TENANT_URL.split('||');
+const apiKeys = process.env.DYNATRACE_API_KEY.split('||'); // dynatrace api key
 const tags = process.env.HOST_TAGS == null ? '' : `&tag=${process.env.HOST_TAGS.split(',').join('&tag=')}`; // if tags are set, store as query string
 const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.split(','); // if tags are set, store as array
 
 // hourly data fetch
 let j = schedule.scheduleJob('1 * * * *', function(){
-    fetchhost(tenantURL,apiKey,tags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
-    fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
-    fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+    for (let t in tenantURLs){
+        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+        const apiKey = apiKeys[t];
+        try {
+            fetchhost(tenantURL,apiKey,tags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+            fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB,1);
+            fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+        } catch(e) {
+            console.log(e);
+        }
+    }
 });
 
 // routes
@@ -42,6 +50,21 @@ app.get('/hostreport', async (req, res) => {
     getData.then((r) => {
         res.send(r);
     }).catch((e) => { console.log(e) });
-})
+});
+
+// import past pgi data
+app.get('/pgi/:hourOffset', async (req, res) => {
+    for (let t in tenantURLs){
+        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+        const apiKey = apiKeys[t];
+        try {
+            fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB,req.params.hourOffset);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+    res.send(`Importing data from ${req.params.hourOffset} hour(s) ago.`);
+});
 
 app.listen(process.env.PORT);
+console.log(`API Server Listening on Port ${process.env.PORT}`);

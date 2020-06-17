@@ -1,4 +1,4 @@
-const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) => {
+const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb, pastHour) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
     const mysql = require('mysql'); // for connecting to db
@@ -40,7 +40,13 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb)
     // Fetch metrics for memory utilization
     (async () => {
             apiURI = '/api/v2/metrics/query'
-            let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h&from=now-1h/h&to=now-0h/h`;
+            let timeBox;
+            if (pastHour){
+                timeBox = `&from=now-${pastHour}h/h&to=now-${pastHour - 1}h/h`;
+            } else {
+                timeBox = '&from=now-1h/h&to=now-0h/h'
+            }
+            let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h${timeBox}`;
             let formatTags = Array.isArray(processTags) ? `&entitySelector=type(PROCESS_GROUP_INSTANCE),tag(${processTags.join('),tag(')})` : '';
             console.log(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`);
             let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`, {'headers': headers});
