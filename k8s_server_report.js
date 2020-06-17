@@ -56,6 +56,7 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                 data[x].memUsed = parseFloat(Math.ceil(percentile(P, data[x].datapoints)));
                 data[x].adjHU = parseFloat(Math.ceil(data[x].memUsed / F));
                 data[x].adjHU = data[x].adjHU > data[x].consumedHostUnits ? data[x].consumedHostUnits : data[x].adjHU;
+                data[x].adjHU = data[x].adjHU < 1 ? 1 : data[x].adjHU;
                 trhu += data[x].consumedHostUnits;
                 tahu += data[x].adjHU;
                 tam += data[x].memUsed;

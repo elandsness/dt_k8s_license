@@ -25,7 +25,6 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
     // fecth the host data and populate in db
     let formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
     apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatTags}`;
-    console.log(`${tenantURL}${apiURI}`);
     (async () => {
         let r = await fetch(`${tenantURL}${apiURI}`, {'headers': headers});
         let rj = await r.json();

@@ -26,7 +26,6 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     let formatTags = Array.isArray(processTags) ? `&tag=${processTags.join('&tag=')}` : '';
     apiURI = `/api/v1/entity/infrastructure/processes`;
     let params = `?includeDetails=true&relativeTime=2hours${formatTags}`;
-    console.log(`${tenantURL}${apiURI}${params}`);
     (async () => {
         let r = await fetch(`${tenantURL}${apiURI}${params}`, {'headers': headers});
         let rj = await r.json();

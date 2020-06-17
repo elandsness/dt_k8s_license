@@ -40,32 +40,24 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
     // Fetch metrics for memory utilization
     (async () => {
             apiURI = '/api/v2/metrics/query'
-            let timeBox;
-            if (pastHour){
-                timeBox = `&from=now-${pastHour}h/h&to=now-${pastHour - 1}h/h`;
-            } else {
-                timeBox = '&from=now-1h/h&to=now-0h/h'
-            }
+            let timeBox = `&from=now-${pastHour}h/h&to=now-${pastHour - 1}h/h`;
             let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h${timeBox}`;
             let formatTags = Array.isArray(processTags) ? `&entitySelector=type(PROCESS_GROUP_INSTANCE),tag(${processTags.join('),tag(')})` : '';
-            console.log(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`);
             let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`, {'headers': headers});
             let rj = await r.json();
             nextKey = rj.nextPageKey;
-            console.log(rj);
             await Promise.all(
                 rj.result[0].data.map((pgi) => { storePGI(pgi) })
-            ).catch(e =>{ console.log(rj, e) });
+            ).catch(e =>{ console.log(e) });
     })().then(async () => {
         const fetchNext = async (k) => {
-            console.log(`${tenantURL}${apiURI}?nextPageKey=${k}`);
             let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers});
             let rj = await r.json();
             nextKey = rj.nextPageKey;
             console.log();
             await Promise.all(
                 rj.result[0].data.map((pgi) => { storePGI(pgi) })
-            ).catch(e =>{ console.log(rj, e) });
+            ).catch(e =>{ console.log(e) });
             return rj.nextPageKey;
         }
         // loop function wrapped in promise, so we can wait to continue until we've run all the needed api calls
