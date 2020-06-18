@@ -29,13 +29,14 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                     displayName,
                     consumedHostUnits,
                     timestamp,
-                    SUM(memory) as memory
+                    SUM(memory) as memory,
+                    tenant
                 FROM tbl_pgi2host
                 JOIN tbl_pgidata USING (pgi_id)
                 JOIN tbl_hostdata USING (host_id)
                 WHERE timestamp >= ${from}
                 AND timestamp <= ${to}
-                GROUP BY host_id, timestamp
+                GROUP BY host_id, timestamp, tenant
                 ORDER BY timestamp`;
         con.query(q, function (err, res) {
             if (err) throw err;
@@ -47,7 +48,8 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                         'entityID': x.host_id,
                         'datapoints': [x.memory],
                         'consumedHostUnits': x.consumedHostUnits,
-                        'displayName': x.displayName
+                        'displayName': x.displayName,
+                        'tenant': x.tenant
                     }
                 }
             }
@@ -68,7 +70,8 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                 'displayName': '',
                 'consumedHostUnits': trhu,
                 'memUsed': tam,
-                'adjHU': tahu
+                'adjHU': tahu,
+                'tenant': ''
             }
             const csvStringifier = createCsvStringifier({
                 header: [
@@ -76,7 +79,8 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                     {id: 'displayName', title: 'HOSTNAME'},
                     {id: 'consumedHostUnits', title: 'REPORTED_HU'},
                     {id: 'memUsed', title: 'ADJ_MEM'},
-                    {id: 'adjHU', title: 'ADJ_HU'}
+                    {id: 'adjHU', title: 'ADJ_HU'},
+                    {id: 'tenant', title: 'TENANT_URL'}
                 ]
             });
             resolve(csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(Object.values(data)));

@@ -35,8 +35,8 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
                             if (i.type.toUpperCase() == 'KUBERNETES' && h.monitoringMode.toUpperCase() === 'FULL_STACK'){
                                 h.toRelationships.isProcessOf.map(v => {
                                     // write pgi 2 host relationship
-                                    let q = `INSERT INTO tbl_pgi2host (pgi_id, host_id) VALUES ("${v}", "${h.entityId}")
-                                        ON DUPLICATE KEY UPDATE pgi_id="${v}", host_id="${h.entityId}"`;
+                                    let q = `INSERT INTO tbl_pgi2host (pgi_id, host_id, tenant) VALUES ("${v}", "${h.entityId}", "${tenantURL}")
+                                        ON DUPLICATE KEY UPDATE pgi_id="${v}", host_id="${h.entityId}", tenant="${tenantURL}"`;
                                     con.query(q, function (err) {
                                         if (err) throw err;
                                     });
