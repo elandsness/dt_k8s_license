@@ -82,5 +82,12 @@ app.get('/pgi/:hourOffset', async (req, res) => {
     res.send(`Importing data from ${req.params.hourOffset} hour(s) ago.`);
 });
 
+app.get('/collate/:timestamp', async (req, res) => {
+    let e = req.params.timestamp + 36883000; // 1 hour span
+    collate_data(req.params.timestamp,e,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
+        console.log(`${new Date()} ${m}`);
+    })
+})
+
 app.listen(process.env.PORT);
 console.log(`API Server Listening on Port ${process.env.PORT}`);
