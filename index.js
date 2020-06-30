@@ -2,6 +2,7 @@
 const fetchhost = require('./fetch_host_data').fetch_host; // for fetching host data
 const fetchpgi = require('./fetch_pgi_data').fetch_pgi; // for fetching pgi data
 const fetchns = require('./fetch_namespaces').fetch_ns; // for fetching namespaces
+const collate_data = require('./collate_data').collate_data; // for reducing data requirements
 const server_report = require('./k8s_server_report').server_report; // returns the server HU calculations
 const schedule = require('node-schedule'); // for scheduling jobs
 const express = require('express'); // for exposing api endpoint to query data
@@ -27,6 +28,19 @@ let j = schedule.scheduleJob('1 * * * *', function(){
         }
     }
 });
+
+// hourly data collation
+let cj = schedule.scheduleJob('31 * * * *', function(){
+    try {
+        let s = new Date();
+        d.setMinutes(d.getMinutes - 95);
+        let e = new Date(s.getTime());
+        e.setMinutes(e.getMinutes() + 70);
+        collate_data(s.getTime(),e.getTime(),process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB)
+    } catch(e) {
+        console.log(e);
+    }
+})
 
 // routes
 // host report
