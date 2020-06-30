@@ -33,10 +33,12 @@ let j = schedule.scheduleJob('1 * * * *', function(){
 let cj = schedule.scheduleJob('31 * * * *', function(){
     try {
         let s = new Date();
-        d.setMinutes(d.getMinutes - 95);
+        s.setMinutes(s.getMinutes - 95);
         let e = new Date(s.getTime());
         e.setMinutes(e.getMinutes() + 70);
-        collate_data(s.getTime(),e.getTime(),process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB)
+        collate_data(s.getTime(),e.getTime(),process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
+            console.log(`${new Date()} ${m}`);
+        })
     } catch(e) {
         console.log(e);
     }
