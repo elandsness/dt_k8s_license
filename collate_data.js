@@ -25,15 +25,17 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                 AND timestamp <= ${to}
                 GROUP BY host_id, timestamp
                 ORDER BY timestamp`;
+        console.log(q);
         con.query(q, function (err, res) {
             if (err) throw err;
             let tmp_v = [];
             for (let x of res){
-                tmp_v.push(`(${x.host_id}, ${x.timestamp}, ${x.memory})`);
+                tmp_v.push(`('${x.host_id}', ${x.timestamp}, ${x.memory.toFixed(5)})`);
             }
             
             // insert collated host data into db
             let insert_q = `INSERT INTO tbl_hostmemdata (host_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+            console.log(insert_q);
             con.query(insert_q, function (err, res) {
                 if (err) throw err;
                 console.log(res);
@@ -52,7 +54,7 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                     if (err) throw err;
                     let tmp_v = [];
                     for (let x of res){
-                        tmp_v.push(`(${x.namespaces}, ${x.timestamp}, ${x.memory})`);
+                        tmp_v.push(`('${x.namespaces}', ${x.timestamp}, ${x.memory.toFixed(5)})`);
                     }
 
                     // insert collated host data into db
