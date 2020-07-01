@@ -30,8 +30,7 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                     consumedHostUnits,
                     timestamp,
                     SUM(memory) as memory
-                FROM tbl_pgi2host
-                JOIN tbl_pgidata USING (pgi_id)
+                FROM tbl_hostmemdata
                 JOIN tbl_hostdata USING (host_id)
                 WHERE timestamp >= ${from}
                 AND timestamp <= ${to}
