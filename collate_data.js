@@ -25,7 +25,6 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                 AND timestamp <= ${to}
                 GROUP BY host_id, timestamp
                 ORDER BY timestamp`;
-        console.log(q);
         con.query(q, function (err, res) {
             if (err) throw err;
             let tmp_v = [];
@@ -35,7 +34,6 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
             
             // insert collated host data into db
             let insert_q = `INSERT INTO tbl_hostmemdata (host_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
-            console.log(insert_q);
             con.query(insert_q, function (err, res) {
                 if (err) throw err;
                 console.log(res);
@@ -69,7 +67,7 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                             if (err) throw err;
                             console.log(res);
 
-                            resolve(`Data collated for data between ${from} and ${end}`);
+                            resolve(`Data collated for data between ${from} and ${to}`);
                         });
                     });
                 });
