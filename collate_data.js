@@ -54,22 +54,25 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                     for (let x of res){
                         tmp_v.push(`('${x.namespaces}', ${x.timestamp}, ${x.memory.toFixed(5)})`);
                     }
-
-                    // insert collated host data into db
-                    let insertns_q = `INSERT INTO tbl_nsmemdata (namespaces, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
-                    con.query(insertns_q, function (err, res) {
-                        if (err) throw err;
-                        console.log(res);
-
-                        // remove the old detail data
-                        let cleanup_q = `DELETE FROM tbl_pgidata WHERE timestamp >= ${from} AND timestamp <= ${to}`;
-                        con.query(cleanup_q, function (err, res) {
+                    if (tmp_v.length > 0){
+                        // insert collated host data into db
+                        let insertns_q = `INSERT INTO tbl_nsmemdata (namespaces, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+                        con.query(insertns_q, function (err, res) {
                             if (err) throw err;
                             console.log(res);
 
-                            resolve(`Data collated for data between ${from} and ${to}`);
+                            // remove the old detail data
+                            let cleanup_q = `DELETE FROM tbl_pgidata WHERE timestamp >= ${from} AND timestamp <= ${to}`;
+                            con.query(cleanup_q, function (err, res) {
+                                if (err) throw err;
+                                console.log(res);
+
+                                resolve(`Data collated for data between ${from} and ${to}`);
+                            });
                         });
-                    });
+                    } else {
+                        resolve(`Nothing to collate between ${from} and ${to}`);
+                    }
                 });
             });
         });
