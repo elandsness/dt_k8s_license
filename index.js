@@ -87,6 +87,7 @@ app.get('/collate/:timestamp', async (req, res) => {
     collate_data(parseInt(req.params.timestamp),e,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
         console.log(`${new Date()} ${m}`);
     })
+    res.send(`Collating data from ${parseInt(req.params.timestamp)} to ${e}`);
 })
 
 app.listen(process.env.PORT);
