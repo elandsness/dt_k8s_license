@@ -2,13 +2,13 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-CREATE TABLE `tbl_hostdata` (
+CREATE TABLE [IF NOT EXISTS] `tbl_hostdata` (
   `host_id` varchar(22) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `displayName` varchar(16000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `consumedHostUnits` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `tbl_hosthistory` (
+CREATE TABLE [IF NOT EXISTS] `tbl_hosthistory` (
   `id` int NOT NULL,
   `entityId` varchar(22) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `month` int NOT NULL,
@@ -18,26 +18,26 @@ CREATE TABLE `tbl_hosthistory` (
   `adjustedHU` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `tbl_hostmemdata` (
+CREATE TABLE [IF NOT EXISTS] `tbl_hostmemdata` (
   `host_id` varchar(22) NOT NULL,
   `timestamp` bigint NOT NULL,
   `memory` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `tbl_nsmemdata` (
+CREATE TABLE [IF NOT EXISTS] `tbl_nsmemdata` (
   `namespaces` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `timestamp` bigint NOT NULL,
   `memory` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `tbl_pgi2host` (
+CREATE TABLE [IF NOT EXISTS] `tbl_pgi2host` (
   `pgi_id` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `host_id` varchar(22) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `namespaces` varchar(2500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `tenant` varchar(2500) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `tbl_pgidata` (
+CREATE TABLE [IF NOT EXISTS] `tbl_pgidata` (
   `pgi_id` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `timestamp` bigint NOT NULL,
   `memory` float NOT NULL
