@@ -33,7 +33,7 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                 }
                 if (tmp_v.length > 0){
                 // insert collated host data into db
-                let insert_q = `INSERT INTO tbl_hostmemdata (host_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+                let insert_q = `REPLACE INTO tbl_hostmemdata (host_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
                 con.query(insert_q, function (err, res) {
                     if (err) throw err;
                     console.log(res);
@@ -56,7 +56,7 @@ const collate_data = (from, to, dbHost, dbUser, dbPass, dbDb) => {
                         }
                         if (tmp_v.length > 0){
                             // insert collated host data into db
-                            let insertns_q = `INSERT INTO tbl_nsmemdata (namespaces, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+                            let insertns_q = `REPLACE INTO tbl_nsmemdata (namespaces, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
                             con.query(insertns_q, function (err, res) {
                                 if (err) throw err;
                                 console.log(res);
