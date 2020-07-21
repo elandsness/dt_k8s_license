@@ -38,8 +38,8 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         let q = `REPLACE INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')}`;
         con.query(q, function (err) {
             if (err) throw err;
-        });
-    })().then(con.end(() => { console.log(`${new Date()} - namespace data imported`); })).catch(e => { console.log(e); });
+        }).then(con.end(() => { console.log(`${new Date()} - namespace data imported`); })).catch(e => { console.log(e); });
+    })().catch(e => { console.log(e); });
 }
 module.exports = {
     fetch_ns: fetch_ns,
