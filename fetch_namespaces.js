@@ -35,7 +35,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
                 tmp_v.push(`("${h.entityId}", "${h.metadata.kubernetesNamespaces.join(',')}")`);
             } catch(e) { continue; }
         }
-        let q = `REPLACE INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')}`;
+        let q = `INSERT INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')} ON DUPLICATE KEY UPDATE namespaces=VALUES(namespaces)`;
         if (tmp_v.length > 0){
             con.query(q, function (err) {
                 if (err) throw err;
