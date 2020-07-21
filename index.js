@@ -103,9 +103,11 @@ app.get('/collate/:timestamp', async (req, res) => {
 })
 
 app.get('/nsimport', async (req, res) => {
-    const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
-    const apiKey = apiKeys[t];
-    fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+    for (let t in tenantURLs){
+        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+        const apiKey = apiKeys[t];
+        fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+    }
     res.send(`Fetching namespace data.`);
 })
 
