@@ -29,23 +29,19 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     (async () => {
         let r = await fetch(`${tenantURL}${apiURI}${params}`, {'headers': headers});
         let rj = await r.json();
-        await Promise.all(
-            rj.map(async h => {
-                    if (h.hasOwnProperty('metadata')){
-                        if (h.metadata.hasOwnProperty('kubernetesNamespaces')){
-                            // write pgi namespaces
-                            let q = `INSERT INTO tbl_pgi2host (pgi_id, namespaces) VALUES ("${h.entityId}",
-                                "${h.metadata.kubernetesNamespaces.join(',')}")
-                                ON DUPLICATE KEY UPDATE pgi_id="${h.entityId}",
-                                namespaces="${h.metadata.kubernetesNamespaces.join(',')}"`;
-                            con.query(q, function (err) {
-                                if (err) throw err;
-                            });
-                        }
-                    }
-            })
-        ).then(con.end(() => { console.log(`${new Date()} - namespace data imported`); })).catch(e => { console.log(e); });
-    })().catch(e => { console.log(e); });
+        let tmp_v = [];
+        for (let h of rj){
+            try {
+                tmp_v.push(`("${h.entityId}", "${h.metadata.kubernetesNamespaces.join(',')}")`);
+            } catch(e) { continue; }
+        }
+        let q = `INSERT INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')} ON DUPLICATE KEY UPDATE namespaces=VALUES(namespaces)`;
+        if (tmp_v.length > 0){
+            con.query(q, function (err) {
+                if (err) throw err;
+            });
+        }
+    })().then(console.log(`${new Date()} - namespace data imported`)).catch(e => { console.log(e); });
 }
 module.exports = {
     fetch_ns: fetch_ns,
