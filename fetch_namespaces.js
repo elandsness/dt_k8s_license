@@ -39,7 +39,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         con.query(q, function (err) {
             if (err) throw err;
         });
-    })().then(con.end(() => { console.log(`${new Date()} - namespace data imported`); })).catch(e => { console.log(e); });
+    })().then(console.log(`${new Date()} - namespace data imported`)).catch(e => { console.log(e); });
 }
 module.exports = {
     fetch_ns: fetch_ns,
