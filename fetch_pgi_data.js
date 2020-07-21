@@ -22,21 +22,6 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
         console.log("Connected!");
     });
 
-    // function for storing pgi data
-    const storePGI = (pgi) => {
-        try {
-            let q = `INSERT INTO tbl_pgidata (pgi_id, timestamp, memory)
-            VALUES ("${pgi.dimensions[0]}","${pgi.timestamps[0]}","${(pgi.values[0]/1024/1024/1024)}")
-            ON DUPLICATE KEY UPDATE pgi_id="${pgi.dimensions[0]}", timestamp="${pgi.timestamps[0]}",
-            memory="${(pgi.values[0]/1024/1024/1024)}"`;
-            con.query(q, function (err) {
-                if (err) throw err;
-            });
-        } catch (e) {
-          console.log(e);
-        }
-    }
-
     // Fetch metrics for memory utilization
     (async () => {
             apiURI = '/api/v2/metrics/query'
@@ -46,18 +31,35 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
             let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`, {'headers': headers});
             let rj = await r.json();
             nextKey = rj.nextPageKey;
-            await Promise.all(
-                rj.result[0].data.map((pgi) => { storePGI(pgi) })
-            ).catch(e =>{ console.log(e) });
+            let tmp_v = [];
+            for (let x of rj.result[0].data){
+                try {
+                    tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
+                } catch(e) { continue; }
+            }
+            if (tmp_v.length > 0){
+                let insert_q = `REPLACE INTO tbl_pgidata (pgi_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+                con.query(insert_q, function (err) {
+                    if (err) throw err;
+                });
+            }
     })().then(async () => {
         const fetchNext = async (k) => {
             let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers});
             let rj = await r.json();
             nextKey = rj.nextPageKey;
-            console.log();
-            await Promise.all(
-                rj.result[0].data.map((pgi) => { storePGI(pgi) })
-            ).catch(e =>{ console.log(e) });
+            let tmp_v = [];
+            for (let x of rj.result[0].data){
+                try {
+                    tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
+                } catch(e) { continue; }
+            }
+            if (tmp_v.length > 0){
+                let insert_q = `REPLACE INTO tbl_pgidata (pgi_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+                con.query(insert_q, function (err) {
+                    if (err) throw err;
+                });
+            }
             return rj.nextPageKey;
         }
         // loop function wrapped in promise, so we can wait to continue until we've run all the needed api calls
