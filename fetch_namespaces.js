@@ -36,10 +36,11 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
             } catch(e) { continue; }
         }
         let q = `REPLACE INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')}`;
-        console.log(q);
-        con.query(q, function (err) {
-            if (err) throw err;
-        });
+        if (tmp_v.length > -1){
+            con.query(q, function (err) {
+                if (err) throw err;
+            });
+        }
     })().then(console.log(`${new Date()} - namespace data imported`)).catch(e => { console.log(e); });
 }
 module.exports = {
