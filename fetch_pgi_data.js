@@ -33,7 +33,9 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
             nextKey = rj.nextPageKey;
             let tmp_v = [];
             for (let x of rj.result[0].data){
-                tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
+                try {
+                    tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
+                } catch(e) { continue; }
             }
             if (tmp_v.length > 0){
                 let insert_q = `REPLACE INTO tbl_pgidata (pgi_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
@@ -48,7 +50,9 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
             nextKey = rj.nextPageKey;
             let tmp_v = [];
             for (let x of rj.result[0].data){
-                tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
+                try {
+                    tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
+                } catch(e) { continue; }
             }
             if (tmp_v.length > 0){
                 let insert_q = `REPLACE INTO tbl_pgidata (pgi_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
