@@ -36,8 +36,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
             } catch(e) { continue; }
         }
         let q = `REPLACE INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')}`;
-        console.log(q,tmp_v);
-        if (tmp_v.length > -1){
+        if (tmp_v.length > 0){
             con.query(q, function (err) {
                 if (err) throw err;
             });
