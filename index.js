@@ -22,7 +22,6 @@ let j = schedule.scheduleJob('1 * * * *', function(){
         try {
             fetchhost(tenantURL,apiKey,tags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
             fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB,1);
-            fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
         } catch(e) {
             console.log(e);
         }
@@ -43,6 +42,19 @@ let cj = schedule.scheduleJob('31 * * * *', function(){
         console.log(e);
     }
 })
+
+// hourly data fetch
+let dj = schedule.scheduleJob('46 * * * *', function(){
+    for (let t in tenantURLs){
+        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+        const apiKey = apiKeys[t];
+        try {
+            fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+});
 
 // routes
 // host report
