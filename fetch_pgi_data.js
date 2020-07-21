@@ -33,10 +33,10 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
             nextKey = rj.nextPageKey;
             let tmp_v = [];
             for (let x of rj.result[0].data){
-                tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.memory.values[0]/1024/1024/1024)})`);
+                tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
             }
             if (tmp_v.length > 0){
-                let insert_q = `REPLACE INTO tbl_hostmemdata (host_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+                let insert_q = `REPLACE INTO tbl_pgidata (pgi_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
                 con.query(insert_q, function (err) {
                     if (err) throw err;
                 });
@@ -48,7 +48,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
             nextKey = rj.nextPageKey;
             let tmp_v = [];
             for (let x of rj.result[0].data){
-                tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.memory.values[0]/1024/1024/1024)})`);
+                tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
             }
             if (tmp_v.length > 0){
                 let insert_q = `REPLACE INTO tbl_hostmemdata (host_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
