@@ -102,5 +102,10 @@ app.get('/collate/:timestamp', async (req, res) => {
     res.send(`Collating data from ${parseInt(req.params.timestamp)} to ${e}`);
 })
 
+app.get('/nsimport', async (req, res) => {
+    fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+    res.send(`Fetching namespace data.`);
+})
+
 app.listen(process.env.PORT);
 console.log(`API Server Listening on Port ${process.env.PORT}`);
