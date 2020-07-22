@@ -43,7 +43,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
                 }
             });
         }
-    }).catch(e => { console.log(e); });
+    })().catch(e => { console.log(e); });
 }
 module.exports = {
     fetch_ns: fetch_ns,
