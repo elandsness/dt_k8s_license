@@ -38,10 +38,12 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         let q = `INSERT INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')} ON DUPLICATE KEY UPDATE namespaces=VALUES(namespaces)`;
         if (tmp_v.length > 0){
             con.query(q, function (err) {
-                if (err) throw err;
+                if (err) { throw err } else {
+                    con.end(() => { console.log(new Date(), ' - namespace data imported'); });
+                }
             });
         }
-    })().then(console.log(`${new Date()} - namespace data imported`)).catch(e => { console.log(e); });
+    }).catch(e => { console.log(e); });
 }
 module.exports = {
     fetch_ns: fetch_ns,

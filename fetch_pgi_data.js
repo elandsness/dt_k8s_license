@@ -19,7 +19,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
         }); 
         con.connect(function(err) {
         if (err) throw err;
-        console.log("Connected!");
+        console.log(new Date(), "Connected!");
     });
 
     // Fetch metrics for memory utilization
