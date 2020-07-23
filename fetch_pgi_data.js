@@ -11,15 +11,25 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
     let apiURI; // stores api endpoint
 
     // connect to the db
-    const con = mysql.createConnection({
+    let con;
+    const connect_2_db = () => {
+        con = mysql.createConnection({
             host: dbHost,
             user: dbUser,
             password: dbPass,
-            database: dbDb
+            database: dbDb,
+            debug: true
         }); 
         con.connect(function(err) {
         if (err) throw err;
-        console.log(new Date(), "Connected!");
+            console.log(new Date(), "Connected!");
+        });
+    }
+    connect_2_db();
+
+    con.on('error', function(err) {
+        console.log(new Date(),err.code);
+        connect_2_db();
     });
 
     // Fetch metrics for memory utilization

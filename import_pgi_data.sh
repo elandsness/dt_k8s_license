@@ -11,7 +11,7 @@ else
    for i in $(seq $2 $3);
    do
       curl -s "${site}/pgi/${i}"
-      sleep 300
+      sleep 150
    done
    echo "Done!"
 fi

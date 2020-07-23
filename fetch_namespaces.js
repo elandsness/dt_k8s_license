@@ -17,7 +17,8 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
             host: dbHost,
             user: dbUser,
             password: dbPass,
-            database: dbDb
+            database: dbDb,
+            debug: true
         }); 
         con.connect(function(err) {
         if (err) throw err;
