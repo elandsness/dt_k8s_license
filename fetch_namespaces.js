@@ -11,7 +11,9 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     let apiURI; // stores api endpoint
 
     // connect to the db
-    const con = mysql.createConnection({
+    let con;
+    const connect_2_db = () => {
+        con = mysql.createConnection({
             host: dbHost,
             user: dbUser,
             password: dbPass,
@@ -19,7 +21,14 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         }); 
         con.connect(function(err) {
         if (err) throw err;
-        console.log("Connected!");
+            console.log(new Date(), "Connected!");
+        });
+    }
+    connect_2_db();
+
+    con.on('error', function(err) {
+        console.log(new Date(),err.code);
+        connect_2_db();
     });
 
     // fecth the pgi data and populate namespace in db
