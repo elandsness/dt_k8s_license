@@ -12,24 +12,27 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
 
     // connect to the db
     let con;
+    let con_opts = {
+       host: dbHost,
+       user: dbUser,
+       password: dbPass,
+       database: dbDb
+    }
+    if (process.env.LOG_LEVEL.toLowerCase() == 'debug'){
+       con_opts.debug = true;
+    }
     const connect_2_db = () => {
-        con = mysql.createConnection({
-            host: dbHost,
-            user: dbUser,
-            password: dbPass,
-            database: dbDb,
-            debug: true
-        }); 
-        con.connect(function(err) {
-        if (err) throw err;
-            console.log(new Date(), "Connected!");
-        });
+       con = mysql.createConnection(con_opts); 
+       con.connect(function(err) {
+       if (err) throw err;
+             console.log(new Date(), "Connected!");
+       });
     }
     connect_2_db();
 
     con.on('error', function(err) {
-        console.log(new Date(),err.code);
-        connect_2_db();
+       console.log(new Date(),err.code);
+       connect_2_db();
     });
 
     // Fetch metrics for memory utilization

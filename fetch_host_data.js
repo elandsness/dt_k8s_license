@@ -11,15 +11,28 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
     let apiURI; // stores api endpoint
 
     // connect to the db
-    const con = mysql.createConnection({
-            host: dbHost,
-            user: dbUser,
-            password: dbPass,
-            database: dbDb
-        }); 
-        con.connect(function(err) {
-        if (err) throw err;
-        console.log(new Date(), "Connected!");
+    let con;
+    let con_opts = {
+       host: dbHost,
+       user: dbUser,
+       password: dbPass,
+       database: dbDb
+    }
+    if (process.env.LOG_LEVEL.toLowerCase() == 'debug'){
+       con_opts.debug = true;
+    }
+    const connect_2_db = () => {
+       con = mysql.createConnection(con_opts); 
+       con.connect(function(err) {
+       if (err) throw err;
+             console.log(new Date(), "Connected!");
+       });
+    }
+    connect_2_db();
+
+    con.on('error', function(err) {
+       console.log(new Date(),err.code);
+       connect_2_db();
     });
 
     // fecth the host data and populate in db

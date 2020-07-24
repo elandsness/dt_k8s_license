@@ -5,14 +5,17 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
 
       // connect to the db
       let con;
+      let con_opts = {
+         host: dbHost,
+         user: dbUser,
+         password: dbPass,
+         database: dbDb
+      }
+      if (process.env.LOG_LEVEL.toLowerCase() == 'debug'){
+         con_opts.debug = true;
+      }
       const connect_2_db = () => {
-         con = mysql.createConnection({
-               host: dbHost,
-               user: dbUser,
-               password: dbPass,
-               database: dbDb,
-               debug: true
-         }); 
+         con = mysql.createConnection(con_opts); 
          con.connect(function(err) {
          if (err) throw err;
                console.log(new Date(), "Connected!");
