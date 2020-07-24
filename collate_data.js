@@ -49,8 +49,7 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
                   // collate on namespace
                   let namespace_q = `SELECT namespaces,
                                           timestamp,
-                                          SUM(memory) as memory,
-                                          pgi_id
+                                          SUM(memory) as memory
                                        FROM tbl_pgi2host
                                        JOIN tbl_pgidata USING (pgi_id)
                                        GROUP BY namespaces, timestamp
@@ -60,7 +59,7 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
                      let tmp_v = [], tmp_d = [];
                      for (let x of res){
                            tmp_v.push(`('${x.namespaces}', ${x.timestamp}, ${x.memory.toFixed(5)})`);
-                           tmp_d.push(`('${x.pgi_id}', ${x.timestamp})`);
+                           tmp_d.push(x.timestamp);
                      }
                      if (tmp_v.length > 0){
                            // insert collated host data into db
@@ -70,7 +69,7 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
                               console.log(new Date(), res);
 
                               // remove the old detail data
-                              let cleanup_q = `DELETE FROM tbl_pgidata WHERE (pgi_id, timestamp) IN (${tmp_d.join(', ')})`;
+                              let cleanup_q = `DELETE FROM tbl_pgidata WHERE timestamp IN (${tmp_d.join(', ')})`;
                               con.query(cleanup_q, function (err, res) {
                                  if (err) throw err;
                                  console.log(new Date(), res);
