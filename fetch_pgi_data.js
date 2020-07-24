@@ -76,18 +76,18 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
         const loopy = async () => {
             return new Promise(async (resolve) => {
                 while(nextKey != null){
-                    nextKey = await fetchNext(nextKey).catch(e => {console.log(e)});
+                    nextKey = await fetchNext(nextKey).catch(e => {console.log(new Date(), e)});
                 }
                 resolve();
-            }).catch(e => { console.log(e) })
+            }).catch(e => { console.log(new Date(), e) })
         }
         // run the loop then continue
         loopy().then(() => {
             con.end(() => { console.log(new Date(), ' - pgi data imported'); });
-        }).catch((error) => {console.log(error)})
+        }).catch((error) => {console.log(new Date(), error)})
     }).catch(function (error) {
         // handle error
-        console.log(error);
+        console.log(new Date(), error);
     });
 }
 module.exports = {

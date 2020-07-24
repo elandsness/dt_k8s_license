@@ -21,7 +21,7 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
             }); 
             con.connect(function(err) {
             if (err) throw err;
-            console.log("Connected!");
+            console.log(new Date(), "Connected!");
         });
 
         // fetch the data

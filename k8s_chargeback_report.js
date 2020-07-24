@@ -57,7 +57,7 @@ const chargeback_report = (tenantURL, apiKey, tags, filePath) => {
         }
     }).catch(function (error) {
         // handle error
-        console.log(error.message);
+        console.log(new Date(), error.message);
     }).finally(function () {
         // Fetch metrics for memory utilization
         apiURI = '/api/v2/metrics/query'
@@ -76,7 +76,7 @@ const chargeback_report = (tenantURL, apiKey, tags, filePath) => {
             }
         }).catch(function (error){
             // handle error
-            console.log(error.message);
+            console.log(new Date(), error.message);
         }).finally(function () {
             const fetchNext = (k) => {
                 axios.get(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers}).then(function (response) {
@@ -92,7 +92,7 @@ const chargeback_report = (tenantURL, apiKey, tags, filePath) => {
                     k = response.data.nextPageKey;
                 }).catch(function(error){
                     // handle error
-                    console.log(error.message);
+                    console.log(new Date(), error.message);
                     return null;
                 }).finally(() => { return k });
             }
@@ -121,7 +121,7 @@ const chargeback_report = (tenantURL, apiKey, tags, filePath) => {
                         namespaces[ns].memory = parseFloat((namespaces[ns].memory / 1073741824).toFixed(4));
                     }
                 }
-            }).catch((error) => {console.log(error.message)}).finally(() => {
+            }).catch((error) => {console.log(new Date(), error.message)}).finally(() => {
                 // stage csv, add totals and dump everything to a file
                 const totals = [{
                     'entityId': 'TOTALS',
@@ -142,9 +142,9 @@ const chargeback_report = (tenantURL, apiKey, tags, filePath) => {
                 .then(() => {
                     csvWriter.writeRecords(totals)
                     .then(() => {
-                        console.log('Container report completed.');
-                    }).catch((e) => { console.log(e.message); });
-                }).catch((e) => { console.log(e.message); });
+                        console.log(new Date(), 'Container report completed.');
+                    }).catch((e) => { console.log(new Date(), e.message); });
+                }).catch((e) => { console.log(new Date(), e.message); });
 
                 // prep and write the namespace report
                 const writeNs = createCsvWriter({
@@ -156,8 +156,8 @@ const chargeback_report = (tenantURL, apiKey, tags, filePath) => {
                 });
                 writeNs.writeRecords(namespaces)
                 .then(() => {
-                    console.log('Namespace report completed.');
-                }).catch((e) => { console.log(e.message); });
+                    console.log(new Date(), 'Namespace report completed.');
+                }).catch((e) => { console.log(new Date(), e.message); });
             });
         });
     });

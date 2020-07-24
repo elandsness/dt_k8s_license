@@ -19,7 +19,7 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
         }); 
         con.connect(function(err) {
         if (err) throw err;
-        console.log("Connected!");
+        console.log(new Date(), "Connected!");
     });
 
     // fecth the host data and populate in db
@@ -53,8 +53,8 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
                         }
                     }
             })
-        ).then(con.end(() => { console.log(`${new Date()} - host data imported`); })).catch(e => { console.log(e); });
-    })().catch(e => { console.log(e); });
+        ).then(con.end(() => { console.log(`${new Date()} - host data imported`); })).catch(e => { console.log(new Date(), e); });
+    })().catch(e => { console.log(new Date(), e); });
 }
 module.exports = {
     fetch_host: fetch_host,
