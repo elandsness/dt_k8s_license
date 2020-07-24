@@ -11,15 +11,28 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
     let apiURI; // stores api endpoint
 
     // connect to the db
-    const con = mysql.createConnection({
-            host: dbHost,
-            user: dbUser,
-            password: dbPass,
-            database: dbDb
-        }); 
-        con.connect(function(err) {
-        if (err) throw err;
-        console.log("Connected!");
+    let con;
+    let con_opts = {
+       host: dbHost,
+       user: dbUser,
+       password: dbPass,
+       database: dbDb
+    }
+    if (process.env.LOG_LEVEL == 'debug'){
+       con_opts.debug = true;
+    }
+    const connect_2_db = () => {
+       con = mysql.createConnection(con_opts); 
+       con.connect(function(err) {
+       if (err) throw err;
+             console.log(new Date(), "Connected!");
+       });
+    }
+    connect_2_db();
+
+    con.on('error', function(err) {
+       console.log(new Date(),err.code);
+       connect_2_db();
     });
 
     // Fetch metrics for memory utilization
@@ -66,18 +79,18 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
         const loopy = async () => {
             return new Promise(async (resolve) => {
                 while(nextKey != null){
-                    nextKey = await fetchNext(nextKey).catch(e => {console.log(e)});
+                    nextKey = await fetchNext(nextKey).catch(e => {console.log(new Date(), e)});
                 }
                 resolve();
-            }).catch(e => { console.log(e) })
+            }).catch(e => { console.log(new Date(), e) })
         }
         // run the loop then continue
         loopy().then(() => {
             con.end(() => { console.log(new Date(), ' - pgi data imported'); });
-        }).catch((error) => {console.log(error)})
+        }).catch((error) => {console.log(new Date(), error)})
     }).catch(function (error) {
         // handle error
-        console.log(error);
+        console.log(new Date(), error);
     });
 }
 module.exports = {

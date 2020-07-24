@@ -11,15 +11,28 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     let apiURI; // stores api endpoint
 
     // connect to the db
-    const con = mysql.createConnection({
-            host: dbHost,
-            user: dbUser,
-            password: dbPass,
-            database: dbDb
-        }); 
-        con.connect(function(err) {
-        if (err) throw err;
-        console.log("Connected!");
+    let con;
+    let con_opts = {
+       host: dbHost,
+       user: dbUser,
+       password: dbPass,
+       database: dbDb
+    }
+    if (process.env.LOG_LEVEL == 'debug'){
+       con_opts.debug = true;
+    }
+    const connect_2_db = () => {
+       con = mysql.createConnection(con_opts); 
+       con.connect(function(err) {
+       if (err) throw err;
+             console.log(new Date(), "Connected!");
+       });
+    }
+    connect_2_db();
+
+    con.on('error', function(err) {
+       console.log(new Date(),err.code);
+       connect_2_db();
     });
 
     // fecth the pgi data and populate namespace in db
@@ -38,10 +51,12 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         let q = `INSERT INTO tbl_pgi2host (pgi_id, namespaces) VALUES ${tmp_v.join(', ')} ON DUPLICATE KEY UPDATE namespaces=VALUES(namespaces)`;
         if (tmp_v.length > 0){
             con.query(q, function (err) {
-                if (err) throw err;
+                if (err) { throw err } else {
+                    con.end(() => { console.log(new Date(), ' - namespace data imported'); });
+                }
             });
         }
-    })().then(console.log(`${new Date()} - namespace data imported`)).catch(e => { console.log(e); });
+    })().catch(e => { console.log(new Date(), e); });
 }
 module.exports = {
     fetch_ns: fetch_ns,

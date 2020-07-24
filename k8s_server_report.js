@@ -13,15 +13,28 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
         let trhu = 0, tahu = 0, tam = 0; // total reported hu, adj hu, and adj mem
 
         // connect to the db
-        const con = mysql.createConnection({
-                host: dbHost,
-                user: dbUser,
-                password: dbPass,
-                database: dbDb
-            }); 
+        let con;
+        let con_opts = {
+            host: dbHost,
+            user: dbUser,
+            password: dbPass,
+            database: dbDb
+        }
+        if (process.env.LOG_LEVEL == 'debug'){
+            con_opts.debug = true;
+        }
+        const connect_2_db = () => {
+            con = mysql.createConnection(con_opts); 
             con.connect(function(err) {
             if (err) throw err;
-            console.log("Connected!");
+                console.log(new Date(), "Connected!");
+            });
+        }
+        connect_2_db();
+
+        con.on('error', function(err) {
+            console.log(new Date(),err.code);
+            connect_2_db();
         });
 
         // fetch the data

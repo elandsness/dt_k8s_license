@@ -23,7 +23,7 @@ let j = schedule.scheduleJob('1 * * * *', function(){
             fetchhost(tenantURL,apiKey,tags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
             fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB,1);
         } catch(e) {
-            console.log(e);
+            console.log(new Date(), e);
         }
     }
 });
@@ -31,15 +31,11 @@ let j = schedule.scheduleJob('1 * * * *', function(){
 // hourly data collation
 let cj = schedule.scheduleJob('31 * * * *', function(){
     try {
-        let s = new Date();
-        s.setMinutes(s.getMinutes() - 95);
-        let e = new Date(s.getTime());
-        e.setMinutes(e.getMinutes() + 70);
-        collate_data(s.getTime(),e.getTime(),process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
-            console.log(`${new Date()} ${m}`);
+        collate_data(process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
+            console.log(new Date(), m);
         })
     } catch(e) {
-        console.log(e);
+        console.log(new Date(), e);
     }
 })
 
@@ -51,7 +47,7 @@ let dj = schedule.scheduleJob('46 * * * *', function(){
         try {
             fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
         } catch(e) {
-            console.log(e);
+            console.log(new Date(), e);
         }
     }
 });
@@ -77,7 +73,7 @@ app.get('/hostreport', async (req, res) => {
    const getData = server_report(from, to, process.env.DB_HOST, process.env.DB_USER, process.env.DB_PASS, process.env.DB);
     getData.then((r) => {
         res.send(r);
-    }).catch((e) => { console.log(e) });
+    }).catch((e) => { console.log(new Date(), e) });
 });
 
 // import past pgi data
@@ -88,18 +84,17 @@ app.get('/pgi/:hourOffset', async (req, res) => {
         try {
             fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB,req.params.hourOffset);
         } catch(e) {
-            console.log(e);
+            console.log(new Date(), e);
         }
     }
     res.send(`Importing data from ${req.params.hourOffset} hour(s) ago.`);
 });
 
-app.get('/collate/:timestamp', async (req, res) => {
-    let e = parseInt(req.params.timestamp) + 36883000; // 1 hour span
-    collate_data(parseInt(req.params.timestamp),e,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
-        console.log(`${new Date()} ${m}`);
+app.get('/collate', async (req, res) => {
+    collate_data(process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
+        console.log(new Date(), m);
     })
-    res.send(`Collating data from ${parseInt(req.params.timestamp)} to ${e}`);
+    res.send(`Collating data`);
 })
 
 app.get('/nsimport', async (req, res) => {
@@ -112,4 +107,4 @@ app.get('/nsimport', async (req, res) => {
 })
 
 app.listen(process.env.PORT);
-console.log(`API Server Listening on Port ${process.env.PORT}`);
+console.log(new Date(), `API Server Listening on Port ${process.env.PORT}`);

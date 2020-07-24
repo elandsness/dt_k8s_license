@@ -11,15 +11,28 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
     let apiURI; // stores api endpoint
 
     // connect to the db
-    const con = mysql.createConnection({
-            host: dbHost,
-            user: dbUser,
-            password: dbPass,
-            database: dbDb
-        }); 
-        con.connect(function(err) {
-        if (err) throw err;
-        console.log("Connected!");
+    let con;
+    let con_opts = {
+       host: dbHost,
+       user: dbUser,
+       password: dbPass,
+       database: dbDb
+    }
+    if (process.env.LOG_LEVEL == 'debug'){
+       con_opts.debug = true;
+    }
+    const connect_2_db = () => {
+       con = mysql.createConnection(con_opts); 
+       con.connect(function(err) {
+       if (err) throw err;
+             console.log(new Date(), "Connected!");
+       });
+    }
+    connect_2_db();
+
+    con.on('error', function(err) {
+       console.log(new Date(),err.code);
+       connect_2_db();
     });
 
     // fecth the host data and populate in db
@@ -53,8 +66,8 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
                         }
                     }
             })
-        ).then(con.end(() => { console.log(`${new Date()} - host data imported`); })).catch(e => { console.log(e); });
-    })().catch(e => { console.log(e); });
+        ).then(con.end(() => { console.log(`${new Date()} - host data imported`); })).catch(e => { console.log(new Date(), e); });
+    })().catch(e => { console.log(new Date(), e); });
 }
 module.exports = {
     fetch_host: fetch_host,
