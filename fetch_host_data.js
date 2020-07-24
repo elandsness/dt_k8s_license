@@ -18,7 +18,7 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
        password: dbPass,
        database: dbDb
     }
-    if (process.env.LOG_LEVEL.toLowerCase() == 'debug'){
+    if (process.env.LOG_LEVEL == 'debug'){
        con_opts.debug = true;
     }
     const connect_2_db = () => {
