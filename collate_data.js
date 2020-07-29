@@ -14,18 +14,11 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
       if (process.env.LOG_LEVEL == 'debug'){
          con_opts.debug = true;
       }
-      const connect_2_db = () => {
-         con = mysql.createConnection(con_opts); 
-         con.connect(function(err) {
-         if (err) throw err;
-               console.log(new Date(), "Connected!");
-         });
-      }
-      connect_2_db();
+      con = mysql.createPool(con_opts); 
+      console.log(new Date(), "Processing raw data");
 
       con.on('error', function(err) {
          console.log(new Date(),err.code);
-         connect_2_db();
       });
 
       // fetch and collate host data
