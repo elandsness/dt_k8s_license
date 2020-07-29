@@ -79,7 +79,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb,
         }
         // run the loop then continue
         loopy().then(() => {
-            con.end(() => { console.log(new Date(), ' - pgi data imported'); });
+            console.log(new Date(), ' - pgi data imported');
         }).catch((error) => {console.log(new Date(), error)})
     }).catch(function (error) {
         // handle error

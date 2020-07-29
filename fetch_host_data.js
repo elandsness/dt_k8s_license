@@ -59,7 +59,7 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
                         }
                     }
             })
-        ).then(con.end(() => { console.log(`${new Date()} - host data imported`); })).catch(e => { console.log(new Date(), e); });
+        ).then(() => {console.log(`${new Date()} - host data imported`); });
     })().catch(e => { console.log(new Date(), e); });
 }
 module.exports = {

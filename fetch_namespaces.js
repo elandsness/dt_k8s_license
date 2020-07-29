@@ -45,7 +45,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         if (tmp_v.length > 0){
             con.query(q, function (err) {
                 if (err) { throw err } else {
-                    con.end(() => { console.log(new Date(), ' - namespace data imported'); });
+                    console.log(new Date(), ' - namespace data imported');
                 }
             });
         }
