@@ -21,18 +21,11 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     if (process.env.LOG_LEVEL == 'debug'){
        con_opts.debug = true;
     }
-    const connect_2_db = () => {
-       con = mysql.createConnection(con_opts); 
-       con.connect(function(err) {
-       if (err) throw err;
-             console.log(new Date(), "Connected!");
-       });
-    }
-    connect_2_db();
+    con = mysql.createPool(con_opts); 
+    console.log(new Date(), "Importing namespace details");
 
     con.on('error', function(err) {
        console.log(new Date(),err.code);
-       connect_2_db();
     });
 
     // fecth the pgi data and populate namespace in db
