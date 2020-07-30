@@ -8,7 +8,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour) => {
         'Accept': 'application/json'
     }; // headers used during api calls
     let apiURI; // stores api endpoint
-    
+
     console.log(new Date(), "Fetching container memory data");
 
     // Fetch metrics for memory utilization
@@ -62,7 +62,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour) => {
         }
         // run the loop then continue
         loopy().then(() => {
-            console.log(new Date(), ' - pgi data imported');
+            console.log(new Date(), 'PGI data imported');
         }).catch((error) => {console.log(new Date(), error)})
     }).catch(function (error) {
         // handle error
