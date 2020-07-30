@@ -1,4 +1,4 @@
-const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) => {
+const fetch_ns = (tenantURL, apiKey, processTags, con) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
     const mysql = require('mysql'); // for connecting to db
@@ -10,23 +10,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     }; // headers used during api calls
     let apiURI; // stores api endpoint
 
-    // connect to the db
-    let con;
-    let con_opts = {
-       host: dbHost,
-       user: dbUser,
-       password: dbPass,
-       database: dbDb
-    }
-    if (process.env.LOG_LEVEL == 'debug'){
-       con_opts.debug = true;
-    }
-    con = mysql.createPool(con_opts); 
-    console.log(new Date(), "Importing namespace details");
-
-    con.on('error', function(err) {
-       console.log(new Date(),err.code);
-    });
+    console.log(new Date(), "Fetching namespace data");
 
     // fecth the pgi data and populate namespace in db
     let formatTags = Array.isArray(processTags) ? `&tag=${processTags.join('&tag=')}` : '';

@@ -1,42 +1,9 @@
-const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
+const collate_data = (con) => {
    return new Promise ((resolve) => {
       // Load required packages
       const mysql = require('mysql'); // for connecting to db
 
-      // connect to the db
-      let con;
-      let con_opts = {
-         host: dbHost,
-         user: dbUser,
-         password: dbPass,
-         database: dbDb,
-         connectionLimit: 2
-      }
-      if (process.env.LOG_LEVEL == 'debug'){
-         con_opts.debug = true;
-      }
-      con = mysql.createPool(con_opts); 
       console.log(new Date(), "Processing raw data");
-
-      con.on('error', function(err) {
-         console.log(new Date(),err.code);
-      });
-
-      con.on('acquire', function() {
-         console.log(new Date(), `Acquired connection`);
-      });
-
-      con.on('connection', function() {
-         console.log(new Date(), `Connected`);
-      });
-
-      con.on('enqueue', function() {
-         console.log(new Date(), `Connection queued`);
-      });
-      
-      con.on('release', function() {
-         console.log(new Date(), `Connection released`);
-      });
 
       // fetch and collate host data
       let q = `SELECT host_id,

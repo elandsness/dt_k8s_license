@@ -1,32 +1,9 @@
-const fetch_pgi = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb, pastHour) => {
+const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
     const mysql = require('mysql'); // for connecting to db
 
-    // Setup variables
-    const headers = {
-        'Authorization': `Api-Token ${apiKey}`,
-        'Accept': 'application/json'
-    }; // headers used during api calls
-    let apiURI; // stores api endpoint
-
-    // connect to the db
-    let con;
-    let con_opts = {
-       host: dbHost,
-       user: dbUser,
-       password: dbPass,
-       database: dbDb
-    }
-    if (process.env.LOG_LEVEL == 'debug'){
-       con_opts.debug = true;
-    }
-    con = mysql.createPool(con_opts); 
-    console.log(new Date(), "Importing pgi details");
-
-    con.on('error', function(err) {
-       console.log(new Date(),err.code);
-    });
+    console.log(new Date(), "Fetching container memory data");
 
     // Fetch metrics for memory utilization
     (async () => {

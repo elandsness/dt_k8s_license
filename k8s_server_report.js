@@ -1,4 +1,4 @@
-const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
+const server_report = (from, to, con) => {
     return new Promise ((resolve) => {
         // Load required packages
         const percentile = require("percentile"); // calculates percentiles
@@ -12,23 +12,7 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
         let data = {} // stages data before returning
         let trhu = 0, tahu = 0, tam = 0; // total reported hu, adj hu, and adj mem
 
-        // connect to the db
-        let con;
-        let con_opts = {
-        host: dbHost,
-        user: dbUser,
-        password: dbPass,
-        database: dbDb
-        }
-        if (process.env.LOG_LEVEL == 'debug'){
-            con_opts.debug = true;
-        }
-        con = mysql.createPool(con_opts); 
         console.log(new Date(), "Running server report");
-
-        con.on('error', function(err) {
-            console.log(new Date(),err.code);
-        });
 
         // fetch the data
         let q = `SELECT host_id,
