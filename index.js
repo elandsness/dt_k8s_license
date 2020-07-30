@@ -16,10 +16,10 @@ const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.s
 
 // connect to the db
 let con_opts = {
-   host: proocess.env.DB_HOST,
-   user: proocess.env.DB_USER,
-   password: proocess.env.DB_PASS,
-   database: proocess.env.DB,
+   host: process.env.DB_HOST,
+   user: process.env.DB_USER,
+   password: process.env.DB_PASS,
+   database: process.env.DB,
    connectionLimit: 5
 }
 if (process.env.LOG_LEVEL == 'debug'){
