@@ -8,6 +8,8 @@ const schedule = require('node-schedule'); // for scheduling jobs
 const express = require('express'); // for exposing api endpoint to query data
 const app = express();
 require('dotenv').config(); // read in vars from .env
+const mysql = require('mysql'); // for connecting to db
+
 // load config
 const tenantURLs = process.env.TENANT_URL.split('||');
 const apiKeys = process.env.DYNATRACE_API_KEY.split('||'); // dynatrace api key

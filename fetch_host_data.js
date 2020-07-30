@@ -1,7 +1,6 @@
 const fetch_host = (tenantURL, apiKey, hostTags, con) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
-    const mysql = require('mysql'); // for connecting to db
 
     // Setup variables
     const headers = {

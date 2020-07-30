@@ -1,8 +1,5 @@
 const collate_data = (con) => {
    return new Promise ((resolve) => {
-      // Load required packages
-      const mysql = require('mysql'); // for connecting to db
-
       console.log(new Date(), "Processing raw data");
 
       // fetch and collate host data

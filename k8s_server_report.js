@@ -2,7 +2,6 @@ const server_report = (from, to, con) => {
     return new Promise ((resolve) => {
         // Load required packages
         const percentile = require("percentile"); // calculates percentiles
-        const mysql = require('mysql'); // for connecting to db
         const createCsvStringifier = require('csv-writer').createObjectCsvStringifier; // for building the csv
 
 

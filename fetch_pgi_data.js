@@ -1,7 +1,6 @@
 const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
-    const mysql = require('mysql'); // for connecting to db
 
     console.log(new Date(), "Fetching container memory data");
 
