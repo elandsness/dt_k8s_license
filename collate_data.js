@@ -43,13 +43,17 @@ const collate_data = (con) => {
                            let insertns_q = `REPLACE INTO tbl_nsmemdata (namespaces, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
                            con.query(insertns_q, function (err, res) {
                               if (err) throw err;
-                              console.log(new Date(), res);
+                              if (process.env.LOG_LEVEL == 'debug'){
+                                 console.log(new Date(), res);
+                              }
 
                               // remove the old detail data
                               let cleanup_q = `DELETE FROM tbl_pgidata WHERE timestamp IN (${tmp_d.join(', ')})`;
                               con.query(cleanup_q, function (err, res) {
                                  if (err) throw err;
-                                 console.log(new Date(), res);
+                                 if (process.env.LOG_LEVEL == 'debug'){
+                                    console.log(new Date(), res);
+                                 }
 
                                  resolve(`Data collated`);
                               });
