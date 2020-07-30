@@ -9,7 +9,8 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
          host: dbHost,
          user: dbUser,
          password: dbPass,
-         database: dbDb
+         database: dbDb,
+         connectionLimit: 2
       }
       if (process.env.LOG_LEVEL == 'debug'){
          con_opts.debug = true;
@@ -19,6 +20,22 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
 
       con.on('error', function(err) {
          console.log(new Date(),err.code);
+      });
+
+      con.on('acquire', function() {
+         console.log(new Date(), `Acquired connection`);
+      });
+
+      con.on('connection', function() {
+         console.log(new Date(), `Connected`);
+      });
+
+      con.on('enqueue', function() {
+         console.log(new Date(), `Connection queued`);
+      });
+      
+      con.on('release', function() {
+         console.log(new Date(), `Connection released`);
       });
 
       // fetch and collate host data
