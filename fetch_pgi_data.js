@@ -2,6 +2,13 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
 
+    // Setup variables
+    const headers = {
+        'Authorization': `Api-Token ${apiKey}`,
+        'Accept': 'application/json'
+    }; // headers used during api calls
+    let apiURI; // stores api endpoint
+    
     console.log(new Date(), "Fetching container memory data");
 
     // Fetch metrics for memory utilization
