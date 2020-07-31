@@ -21,7 +21,9 @@ const collate_data = (con) => {
                let insert_q = `REPLACE INTO tbl_hostmemdata (host_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
                con.query(insert_q, function (err, res) {
                   if (err) throw err;
-                  console.log(new Date(), res);
+                  if (process.env.LOG_LEVEL == 'debug'){
+                     console.log(new Date(), res);
+                  }
 
                   // collate on namespace
                   let namespace_q = `SELECT namespaces,
