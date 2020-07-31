@@ -8,11 +8,47 @@ const schedule = require('node-schedule'); // for scheduling jobs
 const express = require('express'); // for exposing api endpoint to query data
 const app = express();
 require('dotenv').config(); // read in vars from .env
+const mysql = require('mysql'); // for connecting to db
+
 // load config
 const tenantURLs = process.env.TENANT_URL.split('||');
 const apiKeys = process.env.DYNATRACE_API_KEY.split('||'); // dynatrace api key
 const tags = process.env.HOST_TAGS == null ? '' : `&tag=${process.env.HOST_TAGS.split(',').join('&tag=')}`; // if tags are set, store as query string
 const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.split(','); // if tags are set, store as array
+
+// connect to the db
+let con_opts = {
+   host: process.env.DB_HOST,
+   user: process.env.DB_USER,
+   password: process.env.DB_PASS,
+   database: process.env.DB,
+   connectionLimit: 5
+}
+if (process.env.LOG_LEVEL == 'debug'){
+   con_opts.debug = true;
+}
+let con = mysql.createPool(con_opts); 
+console.log(new Date(), "Connection pool established");
+
+con.on('error', function(err) {
+   console.log(new Date(),err.code);
+});
+
+con.on('acquire', function() {
+   console.log(new Date(), `Acquired connection`);
+});
+
+con.on('connection', function() {
+   console.log(new Date(), `Connected`);
+});
+
+con.on('enqueue', function() {
+   console.log(new Date(), `Connection queued`);
+});
+
+con.on('release', function() {
+   console.log(new Date(), `Connection released`);
+});
 
 // hourly data fetch
 let j = schedule.scheduleJob('1 * * * *', function(){
@@ -20,8 +56,8 @@ let j = schedule.scheduleJob('1 * * * *', function(){
         const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
         const apiKey = apiKeys[t];
         try {
-            fetchhost(tenantURL,apiKey,tags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
-            fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB,1);
+            fetchhost(tenantURL,apiKey,tags,con);
+            fetchpgi(tenantURL,apiKey,ptags,con,1);
         } catch(e) {
             console.log(new Date(), e);
         }
@@ -31,7 +67,7 @@ let j = schedule.scheduleJob('1 * * * *', function(){
 // hourly data collation
 let cj = schedule.scheduleJob('31 * * * *', function(){
     try {
-        collate_data(process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
+        collate_data(con).then(m => {
             console.log(new Date(), m);
         })
     } catch(e) {
@@ -45,7 +81,7 @@ let dj = schedule.scheduleJob('46 * * * *', function(){
         const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
         const apiKey = apiKeys[t];
         try {
-            fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+            fetchns(tenantURL,apiKey,ptags,con);
         } catch(e) {
             console.log(new Date(), e);
         }
@@ -70,7 +106,7 @@ app.get('/hostreport', async (req, res) => {
         // default to now
         to = (new Date()).getTime();
     }
-   const getData = server_report(from, to, process.env.DB_HOST, process.env.DB_USER, process.env.DB_PASS, process.env.DB);
+   const getData = server_report(from, to, con);
     getData.then((r) => {
         res.send(r);
     }).catch((e) => { console.log(new Date(), e) });
@@ -82,7 +118,7 @@ app.get('/pgi/:hourOffset', async (req, res) => {
         const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
         const apiKey = apiKeys[t];
         try {
-            fetchpgi(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB,req.params.hourOffset);
+            fetchpgi(tenantURL,apiKey,ptags,con,req.params.hourOffset);
         } catch(e) {
             console.log(new Date(), e);
         }
@@ -91,7 +127,7 @@ app.get('/pgi/:hourOffset', async (req, res) => {
 });
 
 app.get('/collate', async (req, res) => {
-    collate_data(process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB).then(m => {
+    collate_data(con).then(m => {
         console.log(new Date(), m);
     })
     res.send(`Collating data`);
@@ -101,7 +137,7 @@ app.get('/nsimport', async (req, res) => {
     for (let t in tenantURLs){
         const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
         const apiKey = apiKeys[t];
-        fetchns(tenantURL,apiKey,ptags,process.env.DB_HOST,process.env.DB_USER,process.env.DB_PASS,process.env.DB);
+        fetchns(tenantURL,apiKey,ptags,con);
     }
     res.send(`Fetching namespace data.`);
 })

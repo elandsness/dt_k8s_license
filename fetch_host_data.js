@@ -1,7 +1,6 @@
-const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) => {
+const fetch_host = (tenantURL, apiKey, hostTags, con) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
-    const mysql = require('mysql'); // for connecting to db
 
     // Setup variables
     const headers = {
@@ -10,30 +9,7 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
     }; // headers used during api calls
     let apiURI; // stores api endpoint
 
-    // connect to the db
-    let con;
-    let con_opts = {
-       host: dbHost,
-       user: dbUser,
-       password: dbPass,
-       database: dbDb
-    }
-    if (process.env.LOG_LEVEL == 'debug'){
-       con_opts.debug = true;
-    }
-    const connect_2_db = () => {
-       con = mysql.createConnection(con_opts); 
-       con.connect(function(err) {
-       if (err) throw err;
-             console.log(new Date(), "Connected!");
-       });
-    }
-    connect_2_db();
-
-    con.on('error', function(err) {
-       console.log(new Date(),err.code);
-       connect_2_db();
-    });
+    console.log(new Date(), "Fetching host data");
 
     // fecth the host data and populate in db
     let formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
@@ -66,7 +42,7 @@ const fetch_host = (tenantURL, apiKey, hostTags, dbHost, dbUser, dbPass, dbDb) =
                         }
                     }
             })
-        ).then(con.end(() => { console.log(`${new Date()} - host data imported`); })).catch(e => { console.log(new Date(), e); });
+        ).then(() => {console.log(new Date(), "host data imported"); });
     })().catch(e => { console.log(new Date(), e); });
 }
 module.exports = {

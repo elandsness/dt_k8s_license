@@ -1,7 +1,6 @@
-const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) => {
+const fetch_ns = (tenantURL, apiKey, processTags, con) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
-    const mysql = require('mysql'); // for connecting to db
 
     // Setup variables
     const headers = {
@@ -10,30 +9,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
     }; // headers used during api calls
     let apiURI; // stores api endpoint
 
-    // connect to the db
-    let con;
-    let con_opts = {
-       host: dbHost,
-       user: dbUser,
-       password: dbPass,
-       database: dbDb
-    }
-    if (process.env.LOG_LEVEL == 'debug'){
-       con_opts.debug = true;
-    }
-    const connect_2_db = () => {
-       con = mysql.createConnection(con_opts); 
-       con.connect(function(err) {
-       if (err) throw err;
-             console.log(new Date(), "Connected!");
-       });
-    }
-    connect_2_db();
-
-    con.on('error', function(err) {
-       console.log(new Date(),err.code);
-       connect_2_db();
-    });
+    console.log(new Date(), "Fetching namespace data");
 
     // fecth the pgi data and populate namespace in db
     let formatTags = Array.isArray(processTags) ? `&tag=${processTags.join('&tag=')}` : '';
@@ -52,7 +28,7 @@ const fetch_ns = (tenantURL, apiKey, processTags, dbHost, dbUser, dbPass, dbDb) 
         if (tmp_v.length > 0){
             con.query(q, function (err) {
                 if (err) { throw err } else {
-                    con.end(() => { console.log(new Date(), ' - namespace data imported'); });
+                    console.log(new Date(), ' - namespace data imported');
                 }
             });
         }

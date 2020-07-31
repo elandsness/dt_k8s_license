@@ -1,8 +1,7 @@
-const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
+const server_report = (from, to, con) => {
     return new Promise ((resolve) => {
         // Load required packages
         const percentile = require("percentile"); // calculates percentiles
-        const mysql = require('mysql'); // for connecting to db
         const createCsvStringifier = require('csv-writer').createObjectCsvStringifier; // for building the csv
 
 
@@ -12,30 +11,7 @@ const server_report = (from, to, dbHost, dbUser, dbPass, dbDb) => {
         let data = {} // stages data before returning
         let trhu = 0, tahu = 0, tam = 0; // total reported hu, adj hu, and adj mem
 
-        // connect to the db
-        let con;
-        let con_opts = {
-            host: dbHost,
-            user: dbUser,
-            password: dbPass,
-            database: dbDb
-        }
-        if (process.env.LOG_LEVEL == 'debug'){
-            con_opts.debug = true;
-        }
-        const connect_2_db = () => {
-            con = mysql.createConnection(con_opts); 
-            con.connect(function(err) {
-            if (err) throw err;
-                console.log(new Date(), "Connected!");
-            });
-        }
-        connect_2_db();
-
-        con.on('error', function(err) {
-            console.log(new Date(),err.code);
-            connect_2_db();
-        });
+        console.log(new Date(), "Running server report");
 
         // fetch the data
         let q = `SELECT host_id,

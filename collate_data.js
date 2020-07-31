@@ -1,32 +1,6 @@
-const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
+const collate_data = (con) => {
    return new Promise ((resolve) => {
-      // Load required packages
-      const mysql = require('mysql'); // for connecting to db
-
-      // connect to the db
-      let con;
-      let con_opts = {
-         host: dbHost,
-         user: dbUser,
-         password: dbPass,
-         database: dbDb
-      }
-      if (process.env.LOG_LEVEL == 'debug'){
-         con_opts.debug = true;
-      }
-      const connect_2_db = () => {
-         con = mysql.createConnection(con_opts); 
-         con.connect(function(err) {
-         if (err) throw err;
-               console.log(new Date(), "Connected!");
-         });
-      }
-      connect_2_db();
-
-      con.on('error', function(err) {
-         console.log(new Date(),err.code);
-         connect_2_db();
-      });
+      console.log(new Date(), "Processing raw data");
 
       // fetch and collate host data
       let q = `SELECT host_id,
@@ -69,13 +43,17 @@ const collate_data = (dbHost, dbUser, dbPass, dbDb) => {
                            let insertns_q = `REPLACE INTO tbl_nsmemdata (namespaces, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
                            con.query(insertns_q, function (err, res) {
                               if (err) throw err;
-                              console.log(new Date(), res);
+                              if (process.env.LOG_LEVEL == 'debug'){
+                                 console.log(new Date(), res);
+                              }
 
                               // remove the old detail data
                               let cleanup_q = `DELETE FROM tbl_pgidata WHERE timestamp IN (${tmp_d.join(', ')})`;
                               con.query(cleanup_q, function (err, res) {
                                  if (err) throw err;
-                                 console.log(new Date(), res);
+                                 if (process.env.LOG_LEVEL == 'debug'){
+                                    console.log(new Date(), res);
+                                 }
 
                                  resolve(`Data collated`);
                               });
