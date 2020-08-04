@@ -1,4 +1,4 @@
-const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour) => {
+const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
 
@@ -14,7 +14,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour) => {
     // Fetch metrics for memory utilization
     (async () => {
             apiURI = '/api/v2/metrics/query'
-            let timeBox = `&from=now-${pastHour}h/h&to=now-${pastHour - 1}h/h`;
+            timeBox = timeBox ? timeBox : `&from=now-${pastHour}h/h&to=now-${pastHour - 1}h/h`;
             let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h${timeBox}`;
             let formatTags = Array.isArray(processTags) ? `&entitySelector=type(PROCESS_GROUP_INSTANCE),tag(${processTags.join('),tag(')})` : '';
             let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`, {'headers': headers});

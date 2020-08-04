@@ -4,6 +4,7 @@ const fetchpgi = require('./fetch_pgi_data').fetch_pgi; // for fetching pgi data
 const fetchns = require('./fetch_namespaces').fetch_ns; // for fetching namespaces
 const collate_data = require('./collate_data').collate_data; // for reducing data requirements
 const server_report = require('./k8s_server_report').server_report; // returns the server HU calculations
+const audit_records = require('./audit_records').audit_records; // anylizes data in DB and reports back
 const schedule = require('node-schedule'); // for scheduling jobs
 const express = require('express'); // for exposing api endpoint to query data
 const app = express();
@@ -113,17 +114,28 @@ app.get('/hostreport', async (req, res) => {
 });
 
 // import past pgi data
-app.get('/pgi/:hourOffset', async (req, res) => {
-    for (let t in tenantURLs){
-        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
-        const apiKey = apiKeys[t];
-        try {
-            fetchpgi(tenantURL,apiKey,ptags,con,req.params.hourOffset);
-        } catch(e) {
-            console.log(new Date(), e);
+app.get('/pgi/:start/:end?', async (req, res) => {
+    // turn params into usable start and end dates
+    let s = new Date(req.params.start); // start
+    let e = req.params.end ? new Date(req.params.end) : new Date(req.params.start); // end
+    s.setUTCHours(0,0,0,0);
+    e.setUTCHours(24,0,0,0);
+    let o = [];
+    for (let i = s.getTime(); i <= e.getTime(); i += 1000*60*60){
+        let n = new Date(), nts = n.getTime(); // now
+        let timeBox = `&from=${i}&to=${i + (1000*60*60)}&resolution=Inf`;
+        
+        for (let t in tenantURLs){
+            const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+            const apiKey = apiKeys[t];
+            try {
+                fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox);
+            } catch(e) {
+                console.log(new Date(), e);
+            }
         }
     }
-    res.send(`Importing data from ${req.params.hourOffset} hour(s) ago.`);
+    res.send(`Importing data between ${s} and ${e}.`);
 });
 
 app.get('/collate', async (req, res) => {
@@ -140,6 +152,12 @@ app.get('/nsimport', async (req, res) => {
         fetchns(tenantURL,apiKey,ptags,con);
     }
     res.send(`Fetching namespace data.`);
+})
+
+app.get('/audit', async (req, res) => {
+    audit_records(con).then(m => {
+        res.json(m);
+    })
 })
 
 app.listen(process.env.PORT);
