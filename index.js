@@ -2,7 +2,6 @@
 const fetchhost = require('./fetch_host_data').fetch_host; // for fetching host data
 const fetchpgi = require('./fetch_pgi_data').fetch_pgi; // for fetching pgi data
 const fetchns = require('./fetch_namespaces').fetch_ns; // for fetching namespaces
-const collate_data = require('./collate_data').collate_data; // for reducing data requirements
 const server_report = require('./k8s_server_report').server_report; // returns the server HU calculations
 const audit_records = require('./audit_records').audit_records; // anylizes data in DB and reports back
 const schedule = require('node-schedule'); // for scheduling jobs
@@ -65,17 +64,6 @@ let j = schedule.scheduleJob('1 * * * *', function(){
     }
 });
 
-// hourly data collation
-let cj = schedule.scheduleJob('31 * * * *', function(){
-    try {
-        collate_data(con).then(m => {
-            console.log(new Date(), m);
-        })
-    } catch(e) {
-        console.log(new Date(), e);
-    }
-})
-
 // hourly data fetch
 let dj = schedule.scheduleJob('46 * * * *', function(){
     for (let t in tenantURLs){
@@ -137,13 +125,6 @@ app.get('/pgi/:start/:end?', async (req, res) => {
     }
     res.send(`Importing data between ${s} and ${e}.`);
 });
-
-app.get('/collate', async (req, res) => {
-    collate_data(con).then(m => {
-        console.log(new Date(), m);
-    })
-    res.send(`Collating data`);
-})
 
 app.get('/nsimport', async (req, res) => {
     for (let t in tenantURLs){
