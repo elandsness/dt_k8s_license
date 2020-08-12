@@ -65,17 +65,6 @@ let j = schedule.scheduleJob('1 * * * *', function(){
     }
 });
 
-// hourly data collation
-let cj = schedule.scheduleJob('31 * * * *', function(){
-    try {
-        collate_data(con).then(m => {
-            console.log(new Date(), m);
-        })
-    } catch(e) {
-        console.log(new Date(), e);
-    }
-})
-
 // hourly data fetch
 let dj = schedule.scheduleJob('46 * * * *', function(){
     for (let t in tenantURLs){
