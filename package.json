@@ -12,6 +12,12 @@
   "scripts": {
     "start": "node ."
   },
+  "pkg": {
+    "assets": [
+      ".env"
+    ],
+    "targets": "latest-linux-x64"
+  },
   "dependencies": {
     "csv-writer": "^1.6.0",
     "dotenv": "^8.2.0",
