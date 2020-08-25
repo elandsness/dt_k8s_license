@@ -1,0 +1,2 @@
+dt_k8s_license_report_linux filter=lfs diff=lfs merge=lfs -text
+dt_k8s_light_report filter=lfs diff=lfs merge=lfs -text
