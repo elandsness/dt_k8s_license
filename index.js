@@ -15,6 +15,7 @@ const tenantURLs = process.env.TENANT_URL.split('||');
 const apiKeys = process.env.DYNATRACE_API_KEY.split('||'); // dynatrace api key
 const tags = process.env.HOST_TAGS == null ? '' : `&tag=${process.env.HOST_TAGS.split(',').join('&tag=')}`; // if tags are set, store as query string
 const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.split(','); // if tags are set, store as array
+const adjWaitTime = process.env.THROTTLE_IMPORT == null ? 15 : parseInt(process.env.THROTTLE_IMPORT);
 
 // connect to the db
 let con_opts = {
@@ -108,19 +109,14 @@ app.get('/pgi/:start/:end?', async (req, res) => {
     let e = req.params.end ? new Date(req.params.end) : new Date(req.params.start); // end
     s.setUTCHours(0,0,0,0);
     e.setUTCHours(24,0,0,0);
-    let o = [];
+    let waittime = 0;
     for (let i = s.getTime(); i <= e.getTime(); i += 1000*60*60){
-        let n = new Date(), nts = n.getTime(); // now
         let timeBox = `&from=${i}&to=${i + (1000*60*60)}&resolution=Inf`;
-        
         for (let t in tenantURLs){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
-            try {
-                fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox);
-            } catch(e) {
-                console.log(new Date(), e);
-            }
+            setTimeout(() => {fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox)}, waittime * 1000);
+            waittime += adjWaitTime;
         }
     }
     res.send(`Importing data between ${s} and ${e}.`);
