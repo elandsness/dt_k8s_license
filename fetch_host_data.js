@@ -16,6 +16,9 @@ const fetch_host = (tenantURL, apiKey, hostTags, con) => {
     apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatTags}`;
     (async () => {
         let r = await fetch(`${tenantURL}${apiURI}`, {'headers': headers});
+        if (process.env.LOG_LEVEL.toLowerCase().includes('api')){
+            console.log(new Date(), `${tenantURL}${apiURI}`);
+        }
         let rj = await r.json();
         await Promise.all(
             rj.map(async h => {
