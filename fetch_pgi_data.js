@@ -18,6 +18,9 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox) => {
             let queryString = `?metricSelector=builtin:tech.generic.mem.workingSetSize:max&resolution=1h${timeBox}`;
             let formatTags = Array.isArray(processTags) ? `&entitySelector=type(PROCESS_GROUP_INSTANCE),tag(${processTags.join('),tag(')})` : '';
             let r = await fetch(`${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`, {'headers': headers});
+            if (process.env.LOG_LEVEL.toLowerCase().includes('api')){
+                console.log(new Date(), `${tenantURL}${apiURI}${queryString}&pageSize=1000${formatTags}`);
+            }
             let rj = await r.json();
             nextKey = rj.nextPageKey;
             let tmp_v = [];
@@ -35,6 +38,9 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox) => {
     })().then(async () => {
         const fetchNext = async (k) => {
             let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers});
+            if (process.env.LOG_LEVEL.toLowerCase().includes('api')){
+                console.log(new Date(), `${tenantURL}${apiURI}?nextPageKey=${k}`);
+            }
             let rj = await r.json();
             nextKey = rj.nextPageKey;
             let tmp_v = [];

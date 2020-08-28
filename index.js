@@ -25,7 +25,7 @@ let con_opts = {
    database: process.env.DB,
    connectionLimit: 5
 }
-if (process.env.LOG_LEVEL == 'debug'){
+if (process.env.LOG_LEVEL.toLowerCase().includes('debug')){
    con_opts.debug = true;
 }
 let con = mysql.createPool(con_opts); 
