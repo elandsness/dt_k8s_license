@@ -4,6 +4,7 @@ const fetchpgi = require('./fetch_pgi_data').fetch_pgi; // for fetching pgi data
 const fetchns = require('./fetch_namespaces').fetch_ns; // for fetching namespaces
 const server_report = require('./k8s_server_report').server_report; // returns the server HU calculations
 const audit_records = require('./audit_records').audit_records; // anylizes data in DB and reports back
+const collate_records = require('./collate_records').collate_records; // processes imported historic data
 const schedule = require('node-schedule'); // for scheduling jobs
 const express = require('express'); // for exposing api endpoint to query data
 const app = express();
@@ -133,6 +134,12 @@ app.get('/nsimport', async (req, res) => {
 
 app.get('/audit', async (req, res) => {
     audit_records(con).then(m => {
+        res.json(m);
+    })
+})
+
+app.get('/collate', async (req, res) => {
+    collate_records(con).then(m => {
         res.json(m);
     })
 })
