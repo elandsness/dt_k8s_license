@@ -14,7 +14,7 @@ const mysql = require('mysql'); // for connecting to db
 // load config
 const tenantURLs = process.env.TENANT_URL.split('||');
 const apiKeys = process.env.DYNATRACE_API_KEY.split('||'); // dynatrace api key
-const tags = process.env.HOST_TAGS == null ? '' : `&tag=${process.env.HOST_TAGS.split(',').join('&tag=')}`; // if tags are set, store as query string
+const tags = process.env.HOST_TAGS == null ? '' : process.env.HOST_TAGS.split(','); // if tags are set, store as array
 const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.split(','); // if tags are set, store as array
 const adjWaitTime = process.env.THROTTLE_IMPORT == null ? 15 : parseInt(process.env.THROTTLE_IMPORT);
 
