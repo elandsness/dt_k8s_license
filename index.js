@@ -17,6 +17,7 @@ const apiKeys = process.env.DYNATRACE_API_KEY.split('||'); // dynatrace api key
 const tags = process.env.HOST_TAGS == null ? '' : process.env.HOST_TAGS.split(','); // if tags are set, store as array
 const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.split(','); // if tags are set, store as array
 const adjWaitTime = process.env.THROTTLE_IMPORT == null ? 15 : parseInt(process.env.THROTTLE_IMPORT);
+const conLimit = process.env.NUM_MYSQL_CON == null ? 5 : parseInt(process.env.NUM_MYSQL_CON);
 
 // connect to the db
 let con_opts = {
@@ -24,7 +25,7 @@ let con_opts = {
    user: process.env.DB_USER,
    password: process.env.DB_PASS,
    database: process.env.DB,
-   connectionLimit: 5
+   connectionLimit: conLimit
 }
 if (process.env.LOG_LEVEL.toLowerCase().includes('debug')){
    con_opts.debug = true;
