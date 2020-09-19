@@ -53,32 +53,34 @@ con.on('release', function() {
    console.log(new Date(), `Connection released`);
 });
 
-// hourly data fetch
-let j = schedule.scheduleJob('1 * * * *', function(){
-    for (let t in tenantURLs){
-        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
-        const apiKey = apiKeys[t];
-        try {
-            fetchhost(tenantURL,apiKey,tags,con);
-            fetchpgi(tenantURL,apiKey,ptags,con,1);
-        } catch(e) {
-            console.log(new Date(), e);
+if (!process.env.DISABLE_JOBS){
+    // hourly data fetch
+    let j = schedule.scheduleJob('1 * * * *', function(){
+        for (let t in tenantURLs){
+            const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+            const apiKey = apiKeys[t];
+            try {
+                fetchhost(tenantURL,apiKey,tags,con);
+                fetchpgi(tenantURL,apiKey,ptags,con,1);
+            } catch(e) {
+                console.log(new Date(), e);
+            }
         }
-    }
-});
+    });
 
-// hourly data fetch
-let dj = schedule.scheduleJob('46 * * * *', function(){
-    for (let t in tenantURLs){
-        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
-        const apiKey = apiKeys[t];
-        try {
-            fetchns(tenantURL,apiKey,ptags,con);
-        } catch(e) {
-            console.log(new Date(), e);
+    // hourly data fetch
+    let dj = schedule.scheduleJob('46 * * * *', function(){
+        for (let t in tenantURLs){
+            const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+            const apiKey = apiKeys[t];
+            try {
+                fetchns(tenantURL,apiKey,ptags,con);
+            } catch(e) {
+                console.log(new Date(), e);
+            }
         }
-    }
-});
+    });
+}
 
 // routes
 // host report
