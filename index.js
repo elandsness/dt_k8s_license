@@ -53,7 +53,10 @@ con.on('release', function() {
    console.log(new Date(), `Connection released`);
 });
 
-if (!process.env.DISABLE_JOBS){
+if (process.env.DISABLE_JOBS){
+    console.log(new Date(), `Jobs disabled`);
+} else {
+    console.log(new Date(), `Jobs enabled`);
     // hourly data fetch
     let j = schedule.scheduleJob('1 * * * *', function(){
         for (let t in tenantURLs){
