@@ -8,7 +8,12 @@ const collate_records = require('./collate_records').collate_records; // process
 const schedule = require('node-schedule'); // for scheduling jobs
 const express = require('express'); // for exposing api endpoint to query data
 const app = express();
-require('dotenv').config(); // read in vars from .env
+const fs = require('fs');
+let env_file = './.env';
+if (fs.existsSync('/apps/dynaDBReport/.env')) {
+    env_file = '/apps/dynaDBReport/.env';
+}
+require('dotenv').config({'path': env_file}); // read in vars from .env
 const mysql = require('mysql'); // for connecting to db
 
 // load config
@@ -27,8 +32,12 @@ let con_opts = {
    database: process.env.DB,
    connectionLimit: conLimit
 }
-if (process.env.LOG_LEVEL.toLowerCase().includes('debug')){
-   con_opts.debug = true;
+try {
+    if (process.env.LOG_LEVEL.toLowerCase().includes('debug')){
+    con_opts.debug = true;
+    }
+} catch (e) {
+    // setting not in .env, so continue
 }
 let con = mysql.createPool(con_opts); 
 console.log(new Date(), "Connection pool established");
