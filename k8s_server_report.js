@@ -21,8 +21,7 @@ const server_report = (from, to, con) => {
                     SUM(memory) as memory
                 FROM tbl_hostmemdata
                 JOIN tbl_hostdata USING (host_id)
-                WHERE timestamp >= ${from}
-                AND timestamp <= ${to}
+                WHERE timestamp BETWEEN ${from} AND ${to}
                 GROUP BY host_id, timestamp
                 ORDER BY timestamp`;
         con.query(q, function (err, res) {
