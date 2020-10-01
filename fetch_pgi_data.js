@@ -61,10 +61,9 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox) => {
         const loopy = async () => {
             return new Promise(async (resolve) => {
                 while(nextKey != null){
-                    nextKey = await setTimeout(()=>{fetchNext(nextKey).catch(e => {console.log(new Date(), e)})}, 
-                        process.env.DELAY ? process.env.DELAY : 10);
+                    nextKey = await fetchNext(nextKey).catch(e => {console.log(new Date(), e)})
                 }
-                resolve();
+                setTimeout(resolve(), process.env.DELAY ? process.env.DELAY : 10);
             }).catch(e => { console.log(new Date(), e) })
         }
         // run the loop then continue
