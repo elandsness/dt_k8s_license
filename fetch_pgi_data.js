@@ -37,27 +37,25 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox) => {
             }
     })().then(async () => {
         const fetchNext = async (k) => {
-            setTimeout(() => {
-                let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers});
-                if (process.env.LOG_LEVEL.toLowerCase().includes('api')){
-                    console.log(new Date(), `${tenantURL}${apiURI}?nextPageKey=${k}`);
-                }
-                let rj = await r.json();
-                nextKey = rj.nextPageKey;
-                let tmp_v = [];
-                for (let x of rj.result[0].data){
-                    try {
-                        tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
-                    } catch(e) { continue; }
-                }
-                if (tmp_v.length > 0){
-                    let insert_q = `REPLACE INTO tbl_pgidata (pgi_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
-                    con.query(insert_q, function (err) {
-                        if (err) throw err;
-                    });
-                }
-                return rj.nextPageKey;
-            }, process.env.DELAY ? process.env.DELAY : 10);
+            let r = await fetch(`${tenantURL}${apiURI}?nextPageKey=${k}`, {'headers': headers});
+            if (process.env.LOG_LEVEL.toLowerCase().includes('api')){
+                console.log(new Date(), `${tenantURL}${apiURI}?nextPageKey=${k}`);
+            }
+            let rj = await r.json();
+            nextKey = rj.nextPageKey;
+            let tmp_v = [];
+            for (let x of rj.result[0].data){
+                try {
+                    tmp_v.push(`('${x.dimensions[0]}', ${x.timestamps[0]}, ${(x.values[0]/1024/1024/1024)})`);
+                } catch(e) { continue; }
+            }
+            if (tmp_v.length > 0){
+                let insert_q = `REPLACE INTO tbl_pgidata (pgi_id, timestamp, memory) VALUES ${tmp_v.join(', ')}`;
+                con.query(insert_q, function (err) {
+                    if (err) throw err;
+                });
+            }
+            return rj.nextPageKey;
         }
         // loop function wrapped in promise, so we can wait to continue until we've run all the needed api calls
         const loopy = async () => {
