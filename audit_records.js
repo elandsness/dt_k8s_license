@@ -13,12 +13,12 @@ const audit_records = (con) => {
                 if (r_data.hasOwnProperty(fd)){
                     r_data[fd].hours += 1;
                     r_data[fd].records += i.num_records;
-                    r_data[i.timestamp.getUTCHours()] = i.num_records;
+                    r_data[(new Date(i.timestamp)).getUTCHours()] = i.num_records;
                 } else {
                     r_data[fd] = {};
                     r_data[fd].hours = 1;
                     r_data[fd].records = i.num_records;
-                    r_data[i.timestamp.getUTCHours()] = i.num_records;
+                    r_data[(new Date(i.timestamp)).getUTCHours()] = i.num_records;
                 }
             }
             resolve(r_data);
