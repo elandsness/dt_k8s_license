@@ -165,9 +165,9 @@ app.get('/pgi/:start/:end?', async (req, res) => {
 app.get('/pgih/:d/:h', async (req, res) => {
     // turn params into usable start and end dates
     let s = new Date(req.params.d); // start
-    s.setHours(req.params.h);
+    s.setUTCHours(req.params.h);
     let waittime = 0;
-    let timeBox = `&from=${s.getTime()}&to=${s.getTime() + (1000*60*60)}&resolution=Inf`;
+    let timeBox = `&from=${s.getUTCTime()}&to=${s.getUTCTime() + (1000*60*60)}&resolution=Inf`;
     for (let t in tenantURLs){
         const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
         const apiKey = apiKeys[t];
