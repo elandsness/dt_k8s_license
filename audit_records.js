@@ -9,14 +9,21 @@ const audit_records = (con) => {
             let r_data = {}
             for (let i of res){
                 let d = new Date(i.timestamp);
-                let fd = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
+                let fd = `${d.getUTCMonth() + 1}/${d.getUTCDate()}/${d.getUTCFullYear()}`
                 if (r_data.hasOwnProperty(fd)){
                     r_data[fd].hours += 1;
                     r_data[fd].records += i.num_records;
+                    let d = new Date(i.timestamp);
+                    d.setUTCHours(d.getUTCHours() - 1);
+                    r_data[fd].detail[d.getUTCHours()] = i.num_records;
                 } else {
                     r_data[fd] = {};
                     r_data[fd].hours = 1;
                     r_data[fd].records = i.num_records;
+                    r_data[fd].detail = {};
+                    let d = new Date(i.timestamp);
+                    d.setUTCHours(d.getUTCHours() - 1);
+                    r_data[fd].detail[d.getUTCHours()] = i.num_records;
                 }
             }
             resolve(r_data);
