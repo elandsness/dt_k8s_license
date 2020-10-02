@@ -67,7 +67,7 @@ if (process.env.DISABLE_JOBS){
 } else {
     console.log(new Date(), `Jobs enabled`);
     // hourly data fetch
-    let sh = schedule.scheduleJob('1 * * * *', function(){
+    let sh = schedule.scheduleJob('50 * * * *', function(){
         for (let t in tenantURLs){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
@@ -79,7 +79,7 @@ if (process.env.DISABLE_JOBS){
         }
     });
 
-    let sp = schedule.scheduleJob('10 * * * *', function(){
+    let sp = schedule.scheduleJob('1 * * * *', function(){
         for (let t in tenantURLs){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
@@ -92,7 +92,7 @@ if (process.env.DISABLE_JOBS){
     });
 
     // hourly data fetch
-    let sn = schedule.scheduleJob('46 * * * *', function(){
+    let sn = schedule.scheduleJob('40 * * * *', function(){
         for (let t in tenantURLs){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
