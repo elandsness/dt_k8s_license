@@ -167,7 +167,7 @@ app.get('/pgih/:d/:h', async (req, res) => {
     let s = new Date(req.params.d); // start
     s.setHours(req.params.h);
     let waittime = 0;
-    let timeBox = `&from=${i}&to=${i + (1000*60*60)}&resolution=Inf`;
+    let timeBox = `&from=${s.getTime()}&to=${s.getTime() + (1000*60*60)}&resolution=Inf`;
     for (let t in tenantURLs){
         const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
         const apiKey = apiKeys[t];
