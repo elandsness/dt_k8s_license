@@ -67,12 +67,23 @@ if (process.env.DISABLE_JOBS){
 } else {
     console.log(new Date(), `Jobs enabled`);
     // hourly data fetch
-    let j = schedule.scheduleJob('1 * * * *', function(){
+    let sh = schedule.scheduleJob('1 * * * *', function(){
         for (let t in tenantURLs){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
             try {
                 fetchhost(tenantURL,apiKey,tags,con);
+            } catch(e) {
+                console.log(new Date(), e);
+            }
+        }
+    });
+
+    let sp = schedule.scheduleJob('10 * * * *', function(){
+        for (let t in tenantURLs){
+            const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+            const apiKey = apiKeys[t];
+            try {
                 fetchpgi(tenantURL,apiKey,ptags,con,1);
             } catch(e) {
                 console.log(new Date(), e);
@@ -81,7 +92,7 @@ if (process.env.DISABLE_JOBS){
     });
 
     // hourly data fetch
-    let dj = schedule.scheduleJob('46 * * * *', function(){
+    let sn = schedule.scheduleJob('46 * * * *', function(){
         for (let t in tenantURLs){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
@@ -136,8 +147,8 @@ app.get('/pgi/:start/:end?', async (req, res) => {
     // turn params into usable start and end dates
     let s = new Date(req.params.start); // start
     let e = req.params.end ? new Date(req.params.end) : new Date(req.params.start); // end
-    s.setUTCHours(0,0,0,0);
-    e.setUTCHours(24,0,0,0);
+    s.setHours(0,0,0,0);
+    e.setHours(24,0,0,0);
     let waittime = 0;
     for (let i = s.getTime(); i <= e.getTime(); i += 1000*60*60){
         let timeBox = `&from=${i}&to=${i + (1000*60*60)}&resolution=Inf`;
@@ -149,6 +160,21 @@ app.get('/pgi/:start/:end?', async (req, res) => {
         }
     }
     res.send(`Importing data between ${s} and ${e}.`);
+});
+
+app.get('/pgih/:d/:h', async (req, res) => {
+    // turn params into usable start and end dates
+    let s = new Date(req.params.d); // start
+    s.setHours(req.params.h);
+    let waittime = 0;
+    let timeBox = `&from=${i}&to=${i + (1000*60*60)}&resolution=Inf`;
+    for (let t in tenantURLs){
+        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+        const apiKey = apiKeys[t];
+        setTimeout(() => {fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox)}, waittime * 1000);
+        waittime += adjWaitTime;
+    }
+    res.send(`Importing data for hour ${req.params.h} on ${req.params.d}.`);
 });
 
 app.get('/nsimport', async (req, res) => {
