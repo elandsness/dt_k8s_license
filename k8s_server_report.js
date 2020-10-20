@@ -1,4 +1,4 @@
-const server_report = (from, to, con, tenantURL,apiKey,tags) => {
+const server_report = (from, to, con, tenantURL,apiKey,hostTags) => {
     return new Promise ((resolve) => {
         // Load required packages
         const percentile = require("percentile"); // calculates percentiles
@@ -10,6 +10,11 @@ const server_report = (from, to, con, tenantURL,apiKey,tags) => {
         const P = 99; // percentile used for calculations
         let data = {} // stages data before returning
         let trhu = 0, tahu = 0, tam = 0; // total reported hu, adj hu, and adj mem
+
+        const headers = {
+            'Authorization': `Api-Token ${apiKey}`,
+            'Accept': 'application/json'
+        }; // headers used during api calls
 
         console.log(new Date(), "Running server report");
 
