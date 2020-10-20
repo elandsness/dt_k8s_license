@@ -1,4 +1,4 @@
-const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox) => {
+const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox, isapi) => {
     // Load required packages
     const fetch = require('node-fetch'); // for making http calls
 
@@ -68,7 +68,7 @@ const fetch_pgi = (tenantURL, apiKey, processTags, con, pastHour, timeBox) => {
         }
         // run the loop then continue
         loopy().then(() => {
-            console.log(new Date(), 'PGI data imported');
+            console.log(new Date(), 'PGI data imported' + (isapi ? ' via API for ' + timeBox : ''));
         }).catch((error) => {console.log(new Date(), error)})
     }).catch(function (error) {
         // handle error
