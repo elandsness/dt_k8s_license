@@ -56,7 +56,7 @@ const server_report = (from, to, con, tenantURL,apiKey,hostTags) => {
                     FROM tbl_hostmemdata
                     JOIN tbl_hostdata USING (host_id)
                     WHERE timestamp BETWEEN ${from} AND ${to}
-                    AND host_id IN (${hosts.join(',')})
+                    AND host_id IN ("${hosts.join('", "')}")
                     GROUP BY host_id, timestamp
                     ORDER BY timestamp`;
                 con.query(q, function (err, res) {
