@@ -84,7 +84,7 @@ if (process.env.DISABLE_JOBS){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
             try {
-                fetchpgi(tenantURL,apiKey,ptags,con,1);
+                fetchpgi(tenantURL,apiKey,ptags,con,1,false);
             } catch(e) {
                 console.log(new Date(), e);
             }
@@ -165,7 +165,7 @@ app.get('/pgi/:start/:end?', async (req, res) => {
         for (let t in tenantURLs){
             const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
             const apiKey = apiKeys[t];
-            setTimeout(() => {fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox)}, waittime * 1000);
+            setTimeout(() => {fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox,true)}, waittime * 1000);
             waittime += adjWaitTime;
         }
     }
@@ -181,7 +181,7 @@ app.get('/pgih/:d/:h', async (req, res) => {
     for (let t in tenantURLs){
         const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
         const apiKey = apiKeys[t];
-        setTimeout(() => {fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox)}, waittime * 1000);
+        setTimeout(() => {fetchpgi(tenantURL,apiKey,ptags,con,0,timeBox,true)}, waittime * 1000);
         waittime += adjWaitTime;
     }
     res.send(`Importing data for hour ${req.params.h} on ${req.params.d}.`);
