@@ -18,12 +18,14 @@ const server_report = (from, to, con, tenantURL,apiKey,hostTags) => {
 
         console.log(new Date(), "Running server report");
 
-        // hit the host api and get the  valid hosts for the time period the report is being run for
+        // hit the host api and get the  valid hosts for the last 3 days of time period the report is being run for
         let hosts = [];
         let chu = {};
         let hn = {};
         let formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
-        let formatDates = `&startTimestamp=${from}&endTimestamp=${to}`;
+        let tmp_d = new Date(to);
+        tmp_d.setDate(tmp_d.getDate() - 3);
+        let formatDates = `&startTimestamp=${tmp_d.getTime()}&endTimestamp=${to}`;
         apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatDates}${formatTags}`;
         (async () => {
             let r = await fetch(`${tenantURL}${apiURI}`, {'headers': headers});
