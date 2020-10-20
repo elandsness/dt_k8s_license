@@ -3,7 +3,7 @@ const server_report = (from, to, con, tenantURL,apiKey,hostTags) => {
         // Load required packages
         const percentile = require("percentile"); // calculates percentiles
         const createCsvStringifier = require('csv-writer').createObjectCsvStringifier; // for building the csv
-
+        const fetch = require('node-fetch'); // for making http calls
 
         // Setup variables
         const F = 12; // gb ram per host unit
