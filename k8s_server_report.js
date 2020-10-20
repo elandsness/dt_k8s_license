@@ -1,4 +1,4 @@
-const server_report = (from, to, con) => {
+const server_report = (from, to, con, tenantURL,apiKey,tags) => {
     return new Promise ((resolve) => {
         // Load required packages
         const percentile = require("percentile"); // calculates percentiles
@@ -13,61 +13,107 @@ const server_report = (from, to, con) => {
 
         console.log(new Date(), "Running server report");
 
-        // fetch the data
-        let q = `SELECT host_id,
-                    displayName,
-                    consumedHostUnits,
-                    timestamp,
-                    SUM(memory) as memory
-                FROM tbl_hostmemdata
-                JOIN tbl_hostdata USING (host_id)
-                WHERE timestamp BETWEEN ${from} AND ${to}
-                GROUP BY host_id, timestamp
-                ORDER BY timestamp`;
-        con.query(q, function (err, res) {
-            if (err) throw err;
-            for (let x of res){
-                if (data.hasOwnProperty(x.host_id)){
-                    data[x.host_id].datapoints.push(x.memory);
-                } else {
-                    data[x.host_id] = {
-                        'entityID': x.host_id,
-                        'datapoints': [x.memory],
-                        'consumedHostUnits': x.consumedHostUnits,
-                        'displayName': x.displayName
+        // hit the host api and get the  valid hosts for the time period the report is being run for
+        let hosts = [];
+        let chu = {};
+        let hn = {};
+        let formatTags = Array.isArray(hostTags) ? `&tag=${hostTags.join('$tag=')}` : '';
+        let formatDates = `&startTimestamp=${from}&endTimestamp=${to}`;
+        apiURI = `/api/v1/entity/infrastructure/hosts?showMonitoringCandidates=false${formatDates}${formatTags}`;
+        (async () => {
+            let r = await fetch(`${tenantURL}${apiURI}`, {'headers': headers});
+            if (process.env.LOG_LEVEL.toLowerCase().includes('api')){
+                console.log(new Date(), `${tenantURL}${apiURI}`);
+            }
+            let rj = await r.json();
+            await Promise.all(
+                rj.map(async h => {
+                        if (h.hasOwnProperty('softwareTechnologies')){
+                            for (let i of h.softwareTechnologies){
+                                if (i.type.toUpperCase() == 'KUBERNETES' && h.monitoringMode.toUpperCase() === 'FULL_STACK'){
+                                    // write host to db
+                                    hosts.push(h.entityId);
+                                    chu[h.entityId] = h.consumedHostUnits;
+                                    hn[h.entityId] = h.displayName;
+                                }
+                            }
+                        }
+                })
+            ).then(() => {
+                // fetch the data
+                let q = `SELECT host_id,
+                        displayName,
+                        consumedHostUnits,
+                        timestamp,
+                        SUM(memory) as memory
+                    FROM tbl_hostmemdata
+                    JOIN tbl_hostdata USING (host_id)
+                    WHERE timestamp BETWEEN ${from} AND ${to}
+                    AND host_id IN (${hosts.join(',')})
+                    GROUP BY host_id, timestamp
+                    ORDER BY timestamp`;
+                con.query(q, function (err, res) {
+                if (err) throw err;
+                for (let x of res){
+                    if (data.hasOwnProperty(x.host_id)){
+                        data[x.host_id].datapoints.push(x.memory);
+                    } else {
+                        data[x.host_id] = {
+                            'entityID': x.host_id,
+                            'datapoints': [x.memory],
+                            'consumedHostUnits': x.consumedHostUnits,
+                            'displayName': x.displayName
+                        }
                     }
                 }
-            }
-            // calculate percentiles
-            for (let x in data){
-                data[x].memUsed = parseFloat(Math.ceil(percentile(P, data[x].datapoints)));
-                data[x].adjHU = parseFloat(Math.ceil(data[x].memUsed / F));
-                data[x].adjHU = data[x].adjHU > data[x].consumedHostUnits ? data[x].consumedHostUnits : data[x].adjHU;
-                data[x].adjHU = data[x].adjHU < 1 ? 1 : data[x].adjHU;
-                trhu += data[x].consumedHostUnits;
-                tahu += data[x].adjHU;
-                tam += data[x].memUsed;
-            }
+                // calculate percentiles
+                for (let x in data){
+                    data[x].memUsed = parseFloat(Math.ceil(percentile(P, data[x].datapoints)));
+                    data[x].adjHU = parseFloat(Math.ceil(data[x].memUsed / F));
+                    data[x].adjHU = data[x].adjHU > data[x].consumedHostUnits ? data[x].consumedHostUnits : data[x].adjHU;
+                    data[x].adjHU = data[x].adjHU < 1 ? 1 : data[x].adjHU;
+                    trhu += data[x].consumedHostUnits;
+                    tahu += data[x].adjHU;
+                    tam += data[x].memUsed;
+                }
 
-            // stage csv to return
-            data.TOTALS = {
-                'entityID': 'TOTAL',
-                'displayName': '',
-                'consumedHostUnits': trhu,
-                'memUsed': tam,
-                'adjHU': tahu
-            }
-            const csvStringifier = createCsvStringifier({
-                header: [
-                    {id: 'entityID', title: 'ID'},
-                    {id: 'displayName', title: 'HOSTNAME'},
-                    {id: 'consumedHostUnits', title: 'REPORTED_HU'},
-                    {id: 'memUsed', title: 'ADJ_MEM'},
-                    {id: 'adjHU', title: 'ADJ_HU'}
-                ]
+                // add any infra only hosts
+                for (let x of hosts){
+                    if (!Object.keys(data).includes(x)){
+                        data[x] = {
+                            'entityID': x,
+                            'displayName': hn[x],
+                            'consumedHostUnits': chu[x],
+                            'memUsed': 'n/a',
+                            'adjHU': 1
+                        }
+                        tahu += 1;
+                        trhu += chu[x];
+                    }
+                }
+
+                // stage csv to return
+                data.TOTALS = {
+                    'entityID': 'TOTAL',
+                    'displayName': '',
+                    'consumedHostUnits': trhu,
+                    'memUsed': tam,
+                    'adjHU': tahu
+                }
+                const csvStringifier = createCsvStringifier({
+                    header: [
+                        {id: 'entityID', title: 'ID'},
+                        {id: 'displayName', title: 'HOSTNAME'},
+                        {id: 'consumedHostUnits', title: 'REPORTED_HU'},
+                        {id: 'memUsed', title: 'ADJ_MEM'},
+                        {id: 'adjHU', title: 'ADJ_HU'}
+                    ]
+                });
+                resolve(csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(Object.values(data)));
+                });
             });
-            resolve(csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(Object.values(data)));
-        });
+        })().catch(e => { console.log(new Date(), e); });
+
     });
 }
 module.exports = {

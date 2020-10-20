@@ -108,37 +108,47 @@ if (process.env.DISABLE_JOBS){
 // routes
 // host report
 app.get('/hostreport/:start?/:end?', async (req, res) => {
-    let d = new Date(), from, to, fErr;
-    if (req.params.start){
-        console.log(req.params.start);
-        from = (new Date(req.params.start)).getTime();
-        console.log(from);
-    } else {
-        // default to last month
-        d.setMonth(d.getMonth() - 1)
-        const y = d.getFullYear(), m = d.getMonth();
-        from = (new Date(y, m, 1)).getTime();
-    }
-    if (req.params.end){
-        console.log(req.params.end);
-        to_d = new Date(req.params.end);
-        to_d.setMonth(to_d.getMonth() + 1);
-        to = to_d.getTime();
-        console.log(to);
-    } else {
-        // default to one month
-        to_d = new Date(from);
-        to_d.setMonth(to_d.getMonth() + 1);
-        to  = to_d.getTime();
-        console.log(to);
-    }
-    if (Number.isInteger(from) && Number.isInteger(to)){
-        const getData = server_report(from, to, con);
-        getData.then((r) => {
-            res.send(r);
-        }).catch((e) => { console.log(new Date(), e) });
-    } else {
-        res.send('Incorrect date format! Please use simple MonthYYY paterns (e.g. May2020)');
+    for (let t in tenantURLs){
+        const tenantURL = tenantURLs[t].slice(-1) === '/' ? tenantURLs[t].slice(0, -1) : tenantURLs[t]; // tenant url
+        const apiKey = apiKeys[t];
+        try {
+            let d = new Date(), from, to, fErr;
+            if (req.params.start){
+                console.log(req.params.start);
+                from = (new Date(req.params.start)).getTime();
+                console.log(from);
+            } else {
+                // default to last month
+                d.setMonth(d.getMonth() - 1)
+                const y = d.getFullYear(), m = d.getMonth();
+                from = (new Date(y, m, 1)).getTime();
+            }
+            if (req.params.end){
+                console.log(req.params.end);
+                to_d = new Date(req.params.end);
+                to_d.setMonth(to_d.getMonth() + 1);
+                to = to_d.getTime();
+                console.log(to);
+            } else {
+                // default to one month
+                to_d = new Date(from);
+                to_d.setMonth(to_d.getMonth() + 1);
+                to  = to_d.getTime();
+                console.log(to);
+            }
+            if (Number.isInteger(from) && Number.isInteger(to)){
+                const getData = server_report(from, to, con, tenantURL,apiKey,tags);
+                getData.then((r) => {
+                    res.send(r);
+                }).catch((e) => { console.log(new Date(), e) });
+            } else {
+                console.log(new Date(), 'Incorrect date format on host report.');
+                res.send('Incorrect date format! Please use simple MonthYYY paterns (e.g. May2020)');
+            }
+        } catch(e) {
+            console.log(new Date(), e);
+            res.send('Something went wrong: ' + e);
+        }
     }
 });
 
