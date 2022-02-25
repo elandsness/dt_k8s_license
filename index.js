@@ -3,6 +3,7 @@ const fetchhost = require('./fetch_host_data').fetch_host; // for fetching host 
 const fetchpgi = require('./fetch_pgi_data').fetch_pgi; // for fetching pgi data
 const fetchns = require('./fetch_namespaces').fetch_ns; // for fetching namespaces
 const server_report = require('./k8s_server_report').server_report; // returns the server HU calculations
+const ns_report = require('./k8s_chargeback_report').chargeback_report; // returns the NameSpace report
 const audit_records = require('./audit_records').audit_records; // anylizes data in DB and reports back
 const collate_records = require('./collate_records').collate_records; // processes imported historic data
 const schedule = require('node-schedule'); // for scheduling jobs
@@ -143,12 +144,54 @@ app.get('/hostreport/:start?/:end?', async (req, res) => {
                 }).catch((e) => { console.log(new Date(), e) });
             } else {
                 console.log(new Date(), 'Incorrect date format on host report.');
-                res.send('Incorrect date format! Please use simple MonthYYY paterns (e.g. May2020)');
+                res.send('Incorrect date format! Please use simple MonthYYYY paterns (e.g. May2020)');
             }
         } catch(e) {
             console.log(new Date(), e);
             res.send('Something went wrong: ' + e);
         }
+    }
+});
+
+// namespace report
+app.get('/nsreport/:start?/:end?', async (req, res) => {
+    try {
+        let d = new Date(), from, to, fErr;
+        if (req.params.start){
+            console.log(req.params.start);
+            from = (new Date(req.params.start)).getTime();
+            console.log(from);
+        } else {
+            // default to last month
+            d.setMonth(d.getMonth() - 1)
+            const y = d.getFullYear(), m = d.getMonth();
+            from = (new Date(y, m, 1)).getTime();
+        }
+        if (req.params.end){
+            console.log(req.params.end);
+            to_d = new Date(req.params.end);
+            to_d.setMonth(to_d.getMonth() + 1);
+            to = to_d.getTime();
+            console.log(to);
+        } else {
+            // default to one month
+            to_d = new Date(from);
+            to_d.setMonth(to_d.getMonth() + 1);
+            to  = to_d.getTime();
+            console.log(to);
+        }
+        if (Number.isInteger(from) && Number.isInteger(to)){
+            const getData = ns_report(from, to, con);
+            getData.then((r) => {
+                res.send(r);
+            }).catch((e) => { console.log(new Date(), e) });
+        } else {
+            console.log(new Date(), 'Incorrect date format on namespace report.');
+            res.send('Incorrect date format! Please use simple MonthYYYY paterns (e.g. May2020)');
+        }
+    } catch(e) {
+        console.log(new Date(), e);
+        res.send('Something went wrong: ' + e);
     }
 });
 
@@ -210,3 +253,4 @@ app.get('/collate', async (req, res) => {
 
 app.listen(process.env.PORT);
 console.log(new Date(), `API Server Listening on Port ${process.env.PORT}`);
+
