@@ -15,15 +15,43 @@ if (fs.existsSync('/apps/dynaDBReport/.env')) {
     env_file = '/apps/dynaDBReport/.env';
 }
 require('dotenv').config({'path': env_file}); // read in vars from .env
+process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    Loaded in vars from .env ->
+        ${JSON.stringify(process.env)}
+`);
 const mysql = require('mysql'); // for connecting to db
 
 // load config
 const tenantURLs = process.env.TENANT_URL.split('||');
+process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    Tenant URLs ->
+        ${JSON.stringify(tenantURLs)}
+`);
 const apiKeys = process.env.DYNATRACE_API_KEY.split('||'); // dynatrace api key
+process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    API Keys ->
+        ${JSON.stringify(apiKeys)}
+`);
 const tags = process.env.HOST_TAGS == null ? '' : process.env.HOST_TAGS.split(','); // if tags are set, store as array
+process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    Host Tags ->
+        ${JSON.stringify(tags)}
+`);
 const ptags = process.env.PROCESS_TAGS == null ? '' : process.env.PROCESS_TAGS.split(','); // if tags are set, store as array
+process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    Container Tags ->
+        ${JSON.stringify(ptags)}
+`);
 const adjWaitTime = process.env.THROTTLE_IMPORT == null ? 15 : parseInt(process.env.THROTTLE_IMPORT);
+process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    Wait Time ->
+        ${JSON.stringify(adjWaitTime)}
+`);
 const conLimit = process.env.NUM_MYSQL_CON == null ? 5 : parseInt(process.env.NUM_MYSQL_CON);
+process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    Connection Limit ->
+        ${JSON.stringify(conLimit)}
+`);
 
 // connect to the db
 let con_opts = {
@@ -35,10 +63,14 @@ let con_opts = {
 }
 try {
     if (process.env.LOG_LEVEL.toLowerCase().includes('debug')){
-    con_opts.debug = true;
+      con_opts.debug = true;
     }
 } catch (e) {
     // setting not in .env, so continue
+    process.env.LOG_LEVEL.toLowerCase().includes('debug') && console.log(`
+    Connection Opts ->
+        ${JSON.stringify(con_opts)}
+    `);
 }
 let con = mysql.createPool(con_opts); 
 console.log(new Date(), "Connection pool established");
